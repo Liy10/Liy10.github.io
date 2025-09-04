@@ -66,13 +66,16 @@
     <!-- 提示信息容器 -->
     <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 pointer-events-none"></div>
     
-    <!-- 关闭网页弹窗 (修复版) -->
+    <!-- 关闭网页弹窗 (优化提示文案) -->
     <div id="close-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl p-6 max-w-xs w-full text-center shadow-xl">
             <h3 class="text-lg font-bold text-gray-800 mb-4">操作提示</h3>
-            <p class="text-gray-600 mb-6">或许《三傻大闹宝莱坞》是个不错的选择</p>
+            <p class="text-gray-600 mb-6">
+                或许《三傻大闹宝莱坞》是个不错的选择<br>
+                （点击按钮返回上一页，无记录时可手动返回）
+            </p>
             <button id="close-page-btn" class="bg-primary text-white px-6 py-2.5 rounded-full text-sm hover:bg-primary/90 transition-colors font-medium">
-                关闭网页
+                返回上一页
             </button>
         </div>
     </div>
@@ -170,13 +173,10 @@
         // 输入模式管理 - 默认语音输入
         let currentMode = 'voice';
         
-        // 1. 修复：“开始使用”按钮点击逻辑（确保正常跳转）
+        // 1. “开始使用”按钮点击逻辑（保持原有过渡效果）
         enterButton.addEventListener('click', () => {
-            // 隐藏启动页（添加过渡动画）
             startScreen.style.transition = 'opacity 0.5s ease-out';
             startScreen.classList.add('opacity-0', 'pointer-events-none');
-            
-            // 延迟显示主内容，保证过渡流畅
             setTimeout(() => {
                 startScreen.style.display = 'none';
                 mainContent.classList.remove('opacity-0');
@@ -214,16 +214,13 @@
             this.style.height = Math.min(this.scrollHeight, 100) + 'px'; // 限制最大高度
         });
         
-        // 4. 显示提示+弹出关闭弹窗（修复逻辑关联）
+        // 4. 显示提示+弹出关闭弹窗（保持原有逻辑关联）
         function showToast(message) {
-            // 原有toast提示
             const toast = document.createElement('div');
             toast.className = 'bg-white px-4 py-2 rounded-lg shadow-lg text-gray-800 toast-animation';
             toast.textContent = message;
             toastContainer.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
-            
-            // 同时弹出关闭弹窗
             closeModal.classList.remove('hidden');
         }
         
@@ -232,15 +229,13 @@
             const message = messageInput.value.trim();
             if (!message) return;
             
-            convertToChatMode(); // 切换到聊天界面
-            addMessageToChat(message, 'user'); // 添加用户消息
-            showToast("或许《三傻大闹宝莱坞》是个不错的选择"); // 触发提示+关闭弹窗
+            convertToChatMode();
+            addMessageToChat(message, 'user');
+            showToast("或许《三傻大闹宝莱坞》是个不错的选择");
             
-            // 清空输入框
             messageInput.value = '';
             messageInput.style.height = 'auto';
             
-            // 模拟AI回复
             setTimeout(() => {
                 const responses = [
                     "感谢您的提问，我正在为您整理答案...",
@@ -265,7 +260,6 @@
         stopVoiceBtn.addEventListener('click', () => {
             voiceModal.classList.add('hidden');
             
-            // 模拟语音识别结果
             setTimeout(() => {
                 const sampleTexts = [
                     "你好，今天天气怎么样？",
@@ -277,9 +271,8 @@
                 
                 convertToChatMode();
                 addMessageToChat(randomText, 'user');
-                showToast("或许《三傻大闹宝莱坞》是个不错的选择"); // 触发提示+关闭弹窗
+                showToast("或许《三傻大闹宝莱坞》是个不错的选择");
                 
-                // 模拟AI回复
                 setTimeout(() => {
                     const responses = [
                         "今天天气晴朗，气温25℃，适合户外活动。",
@@ -290,48 +283,37 @@
                     addMessageToChat(responses[Math.floor(Math.random() * responses.length)], 'ai');
                 }, 1200);
                 
-                // 保持语音模式
                 if (currentMode !== 'voice') voiceInputBtn.click();
             }, 500);
         });
         
-        // 7. 核心修改：微信+普通浏览器通用关闭逻辑
+        // 7. 核心优化：微信/普通浏览器通用「返回上一页」逻辑
         closePageBtn.addEventListener('click', () => {
-            // 1. 判断是否在微信内置浏览器中（通过UserAgent识别）
+            // 检测是否为微信内置浏览器
             const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
             
-            if (isWeChat) {
-                // 微信环境：使用微信专属API关闭窗口
-                if (typeof WeixinJSBridge !== 'undefined') {
-                    // 若WeixinJSBridge已加载，直接调用关闭
-                    WeixinJSBridge.invoke('closeWindow', {}, (res) => {
-                        // 回调可忽略（微信关闭成功后无返回）
-                    });
-                } else {
-                    // 若WeixinJSBridge未加载，监听Ready事件后再关闭
-                    document.addEventListener('WeixinJSBridgeReady', () => {
-                        WeixinJSBridge.invoke('closeWindow');
-                    }, false);
-                }
+            // 判断是否有可返回的历史记录（length>1表示非入口页）
+            if (window.history.length > 1) {
+                // 微信/普通浏览器统一调用返回上一页
+                window.history.back();
             } else {
-                // 非微信环境：保持原有关闭逻辑
-                window.close();
-                // 兼容提示（若标准关闭失效）
-                setTimeout(() => {
-                    alert('若网页未自动关闭，请手动点击浏览器右上角关闭按钮');
-                }, 500);
+                // 无历史记录时，根据环境给出提示
+                if (isWeChat) {
+                    alert('当前是入口页，无历史记录可返回\n可点击微信顶部"×"或手机返回键退出');
+                } else {
+                    alert('当前是入口页，无历史记录可返回\n可手动关闭浏览器标签页');
+                }
             }
             
-            // 关闭弹窗（无论是否关闭成功，先隐藏弹窗）
+            // 隐藏弹窗（无论是否返回成功，先关闭弹窗）
             closeModal.classList.add('hidden');
         });
         
-        // 8. 辅助函数：切换到聊天模式（隐藏欢迎区，显示聊天记录）
+        // 8. 辅助函数：切换到聊天模式（保持原有功能）
         function convertToChatMode() {
             const welcomeArea = document.querySelector('.flex-1.flex-col');
             if (welcomeArea) {
                 welcomeArea.remove();
-                // 创建聊天记录容器
                 const chatContainer = document.createElement('div');
                 chatContainer.id = 'chat-container';
                 chatContainer.className = 'flex-1 overflow-y-auto scrollbar-hide space-y-4 mb-4';
@@ -339,7 +321,7 @@
             }
         }
         
-        // 9. 辅助函数：添加聊天消息
+        // 9. 辅助函数：添加聊天消息（保持原有功能）
         function addMessageToChat(message, sender) {
             const chatContainer = document.getElementById('chat-container');
             if (!chatContainer) return;
@@ -367,13 +349,13 @@
             }`;
             bubble.textContent = message;
             
-            // 组装消息（用户消息：气泡在左，头像在右；AI消息相反）
+            // 组装消息
             sender === 'user' 
                 ? (messageDiv.append(bubble, avatar)) 
                 : (messageDiv.append(avatar, bubble));
             
             chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight; // 滚动到最新消息
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
         // 10. 动画样式（保持原有效果）
