@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>八妹AI助手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        neutral: '#F5F7FA',
+                        light: '#F2F3F5'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .bg-gradient-ai {
+                background: linear-gradient(135deg, #165DFF 0%, #36CFC9 100%);
+            }
+            .scrollbar-hide {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .toast-animation {
+                animation: toast 3s ease-in-out forwards;
+            }
+            @keyframes toast {
+                0% { opacity: 0; transform: translateY(-20px); }
+                20% { opacity: 1; transform: translateY(0); }
+                80% { opacity: 1; transform: translateY(0); }
+                100% { opacity: 0; transform: translateY(-20px); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-neutral min-h-screen flex flex-col overflow-hidden">
+    <!-- 开始界面 -->
+    <div id="start-screen" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
+        <div class="w-48 h-48 rounded-full bg-gradient-ai p-2 shadow-lg mb-8 animate-float">
+            <img 
+                src="https://pic.pngsucai.com/00/84/32/b476d75b65aee365.webp" 
+                alt="八妹AI形象" 
+                class="w-full h-full object-cover rounded-full"
+            >
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">智能搜索工具</h1>
+        <p class="text-gray-600 mb-8 text-center max-w-xs px-4">该工具可以进行信息搜索、答疑、写作等任务</p>
+        <button id="enter-button" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg">
+            开始使用
+        </button>
+    </div>
+
+    <!-- 提示信息容器 -->
+    <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 pointer-events-none"></div>
+    
+    <!-- 主要区域 -->
+    <main class="flex-1 flex flex-col max-w-md w-full mx-auto w-full p-4 opacity-0 transition-opacity duration-500">
+        <!-- 上方：AI形象展示和欢迎语 -->
+        <div class="flex-1 flex flex-col items-center justify-center text-center py-8">
+            <!-- AI头像 -->
+            <div class="w-40 h-40 rounded-full bg-gradient-ai p-2 shadow-lg mb-6 animate-float">
+                <img 
+                    src="https://pic.pngsucai.com/00/84/32/b476d75b65aee365.webp" 
+                    alt="八妹AI形象" 
+                    class="w-full h-full object-cover rounded-full"
+                >
+            </div>
+            
+            <!-- 欢迎语 -->
+            <div class="space-y-3">
+                <h1 class="text-2xl font-bold text-gray-800">智能搜索工具</h1>
+                <p class="text-gray-600 text-base max-w-xs">
+                    该工具可以进行信息搜索、答疑、写作等任务
+                </p>
+            </div>
+        </div>
+        
+        <!-- 下方：可切换的输入框 -->
+        <div class="bg-white rounded-2xl shadow-md p-4 mb-6">
+            <!-- 输入模式切换 -->
+            <div class="flex items-center space-x-2 mb-3">
+                <button id="text-input-btn" class="flex-1 py-2 rounded-lg bg-light text-gray-600 flex items-center justify-center space-x-2 transition-all">
+                    <i class="fa fa-keyboard-o"></i>
+                    <span>文字</span>
+                </button>
+                <button id="voice-input-btn" class="flex-1 py-2 rounded-lg bg-primary text-white flex items-center justify-center space-x-2 transition-all">
+                    <i class="fa fa-microphone"></i>
+                    <span>语音</span>
+                </button>
+            </div>
+            
+            <!-- 文字输入区域 (默认隐藏) -->
+            <div id="text-input-container" class="hidden flex items-center space-x-2">
+                <textarea 
+                    id="message-input" 
+                    class="flex-1 border-none outline-none resize-none h-12 text-base placeholder-gray-400" 
+                    placeholder="请输入您的问题..."
+                ></textarea>
+                <button id="send-btn" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors">
+                    <i class="fa fa-paper-plane"></i>
+                </button>
+            </div>
+            
+            <!-- 语音输入区域 (默认显示) -->
+            <div id="voice-input-container" class="py-6 flex flex-col items-center justify-center">
+                <div id="voice-button" class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 cursor-pointer hover:bg-primary/20 transition-all">
+                    <i class="fa fa-microphone text-primary text-2xl"></i>
+                </div>
+                <p class="text-gray-600 text-sm">点击开始录音</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- 语音输入状态提示 -->
+    <div id="voice-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-xs w-full text-center">
+            <div class="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center animate-pulse">
+                <i class="fa fa-microphone text-primary text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-1">正在录音</h3>
+            <p class="text-gray-500 text-sm mb-4">请说出您的问题</p>
+            <button id="stop-voice-btn" class="bg-primary text-white px-5 py-2 rounded-full text-sm hover:bg-primary/90 transition-colors">
+                完成录音
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const startScreen = document.getElementById('start-screen');
+        const enterButton = document.getElementById('enter-button');
+        const mainContent = document.querySelector('main');
+        const textInputBtn = document.getElementById('text-input-btn');
+        const voiceInputBtn = document.getElementById('voice-input-btn');
+        const textInputContainer = document.getElementById('text-input-container');
+        const voiceInputContainer = document.getElementById('voice-input-container');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const voiceButton = document.getElementById('voice-button');
+        const voiceModal = document.getElementById('voice-modal');
+        const stopVoiceBtn = document.getElementById('stop-voice-btn');
+        const toastContainer = document.getElementById('toast-container');
+        
+        // 输入模式管理 - 默认语音输入
+        let currentMode = 'voice';
+        
+        // 点击开始按钮进入聊天界面
+        enterButton.addEventListener('click', () => {
+            // 隐藏开始界面
+            startScreen.classList.add('opacity-0', 'pointer-events-none');
+            startScreen.style.transition = 'opacity 0.5s ease-out';
+            
+            // 显示主界面
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                mainContent.classList.remove('opacity-0');
+            }, 500);
+        });
+        
+        // 切换到文字输入
+        textInputBtn.addEventListener('click', () => {
+            if (currentMode !== 'text') {
+                currentMode = 'text';
+                textInputBtn.classList.add('bg-primary', 'text-white');
+                textInputBtn.classList.remove('bg-light', 'text-gray-600');
+                voiceInputBtn.classList.remove('bg-primary', 'text-white');
+                voiceInputBtn.classList.add('bg-light', 'text-gray-600');
+                textInputContainer.classList.remove('hidden');
+                voiceInputContainer.classList.add('hidden');
+            }
+        });
+        
+        // 切换到语音输入
+        voiceInputBtn.addEventListener('click', () => {
+            if (currentMode !== 'voice') {
+                currentMode = 'voice';
+                voiceInputBtn.classList.add('bg-primary', 'text-white');
+                voiceInputBtn.classList.remove('bg-light', 'text-gray-600');
+                textInputBtn.classList.remove('bg-primary', 'text-white');
+                textInputBtn.classList.add('bg-light', 'text-gray-600');
+                voiceInputContainer.classList.remove('hidden');
+                textInputContainer.classList.add('hidden');
+            }
+        });
+        
+        // 自动调整文本框高度
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+        
+        // 显示提示信息
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'bg-white px-4 py-2 rounded-lg shadow-lg text-gray-800 toast-animation';
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            
+            // 3秒后自动移除提示
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // 转换到聊天模式（隐藏初始欢迎区，显示聊天记录）
+            convertToChatMode();
+            
+            // 添加用户消息
+            addMessageToChat(message, 'user');
+            
+            // 显示提示信息
+            showToast("这是个好问题，我来给你解答");
+            
+            // 清空输入框
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // 模拟AI回复
+            setTimeout(() => {
+                const responses = [
+                    "感谢您的提问，我正在为您整理答案...",
+                    "您说的是关于这个方面的问题对吗？让我为您详细解答。",
+                    "这个问题很有意思，我的理解是...",
+                    "根据您的需求，我建议可以这样做..."
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addMessageToChat(randomResponse, 'ai');
+            }, 1200);
+        }
+        
+        // 开始语音输入
+        function startVoiceInput() {
+            // 显示录音模态框
+            voiceModal.classList.remove('hidden');
+        }
+        
+        // 结束语音输入并处理结果
+        function stopVoiceInput() {
+            // 隐藏录音模态框
+            voiceModal.classList.add('hidden');
+            
+            // 模拟语音识别过程
+            setTimeout(() => {
+                const sampleTexts = [
+                    "你好，今天天气怎么样？",
+                    "帮我设置一个明天早上七点的闹钟。",
+                    "什么是人工智能？",
+                    "推荐一部好看的电影。"
+                ];
+                const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+                
+                // 转换到聊天模式
+                convertToChatMode();
+                
+                // 添加语音识别结果到聊天记录
+                addMessageToChat(randomText, 'user');
+                
+                // 显示提示信息："这是个好问题，我来给你解答"
+                showToast("这是个好问题，我来给你解答");
+                
+                // 模拟AI回复
+                setTimeout(() => {
+                    const responses = [
+                        "今天天气晴朗，气温25℃，适合户外活动。",
+                        "已为您设置明天早上7点的闹钟。",
+                        "人工智能是研究、开发用于模拟、延伸和扩展人的智能的理论、方法、技术及应用系统的一门新的技术科学。",
+                        "推荐您观看《盗梦空间》，这是一部情节紧凑、构思巧妙的科幻电影。"
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessageToChat(randomResponse, 'ai');
+                }, 1200);
+                
+                // 确保保持在语音输入模式
+                if (currentMode !== 'voice') {
+                    voiceInputBtn.click();
+                }
+            }, 500);
+        }
+        
+        // 转换到聊天模式
+        function convertToChatMode() {
+            // 移除初始欢迎区域（如果存在）
+            const welcomeArea = document.querySelector('.flex-1.flex-col');
+            if (welcomeArea) {
+                welcomeArea.remove();
+                
+                // 创建聊天记录区域
+                const chatContainer = document.createElement('div');
+                chatContainer.id = 'chat-container';
+                chatContainer.className = 'flex-1 overflow-y-auto scrollbar-hide space-y-4 mb-4';
+                mainContent.insertBefore(chatContainer, mainContent.firstChild);
+            }
+        }
+        
+        // 添加消息到聊天记录
+        function addMessageToChat(message, sender) {
+            const chatContainer = document.getElementById('chat-container');
+            if (!chatContainer) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex items-start ${sender === 'user' ? 'justify-end' : ''} space-x-3 animate-fade-in`;
+            
+            // 头像
+            const avatar = document.createElement('div');
+            avatar.className = `w-9 h-9 rounded-full ${sender === 'user' ? 'bg-gray-200' : 'bg-gradient-ai'} flex-shrink-0`;
+            
+            const avatarImg = document.createElement('img');
+            avatarImg.src = sender === 'user' 
+                ? 'https://picsum.photos/200/200?random=2' 
+                : 'https://picsum.photos/300/300?random=1';
+            avatarImg.alt = sender === 'user' ? '用户头像' : '八妹AI头像';
+            avatarImg.className = 'w-full h-full object-cover rounded-full';
+            avatar.appendChild(avatarImg);
+            
+            // 消息气泡
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `
+                px-4 py-2 rounded-2xl max-w-[75%]
+                ${sender === 'user' 
+                    ? 'bg-primary text-white rounded-tr-none' 
+                    : 'bg-white text-gray-800 rounded-tl-none shadow-sm'
+                }
+            `;
+            messageBubble.textContent = message;
+            
+            // 组装消息
+            if (sender === 'user') {
+                messageDiv.appendChild(messageBubble);
+                messageDiv.appendChild(avatar);
+            } else {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageBubble);
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // 事件监听
+        sendBtn.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // 单击开始录音
+        voiceButton.addEventListener('click', startVoiceInput);
+        
+        // 单击完成录音
+        stopVoiceBtn.addEventListener('click', stopVoiceInput);
+        
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            .animate-pulse {
+                animation: pulse 1.5s infinite;
+            }
+            @keyframes float {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-8px); }
+                100% { transform: translateY(0px); }
+            }
+            .animate-float {
+                animation: float 3s ease-in-out infinite;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
