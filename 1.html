@@ -34,14 +34,19 @@
             .scrollbar-hide::-webkit-scrollbar {
                 display: none;
             }
-            .toast-animation {
-                animation: toast 3s ease-in-out forwards;
+            .toast-enter {
+                animation: toastEnter 0.3s ease-out forwards;
             }
-            @keyframes toast {
-                0% { opacity: 0; transform: translateY(-20px); }
-                20% { opacity: 1; transform: translateY(0); }
-                80% { opacity: 1; transform: translateY(0); }
-                100% { opacity: 0; transform: translateY(-20px); }
+            .toast-exit {
+                animation: toastExit 0.3s ease-in forwards;
+            }
+            @keyframes toastEnter {
+                from { opacity: 0; transform: translateY(-20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes toastExit {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-20px); }
             }
         }
     </style>
@@ -145,21 +150,6 @@
             const startScreen = document.getElementById('start-screen');
             const enterButton = document.getElementById('enter-button');
             const mainContent = document.querySelector('main');
-            
-            // 点击开始按钮进入聊天界面
-            enterButton.addEventListener('click', () => {
-                // 隐藏开始界面（改进版）
-                startScreen.style.opacity = '0';
-                startScreen.style.pointerEvents = 'none';
-                
-                // 显示主界面
-                setTimeout(() => {
-                    startScreen.style.display = 'none';
-                    mainContent.style.opacity = '1';
-                }, 500); // 与过渡动画时间匹配
-            });
-            
-            // 其他代码保持不变...
             const textInputBtn = document.getElementById('text-input-btn');
             const voiceInputBtn = document.getElementById('voice-input-btn');
             const textInputContainer = document.getElementById('text-input-container');
@@ -173,6 +163,19 @@
             
             // 输入模式管理 - 默认语音输入
             let currentMode = 'voice';
+            
+            // 点击开始按钮进入聊天界面
+            enterButton.addEventListener('click', () => {
+                // 隐藏开始界面
+                startScreen.style.opacity = '0';
+                startScreen.style.pointerEvents = 'none';
+                
+                // 显示主界面
+                setTimeout(() => {
+                    startScreen.style.display = 'none';
+                    mainContent.style.opacity = '1';
+                }, 500);
+            });
             
             // 切换到文字输入
             textInputBtn.addEventListener('click', () => {
@@ -206,17 +209,29 @@
                 this.style.height = Math.min(this.scrollHeight, 100) + 'px';
             });
             
-            // 显示提示信息
+            // 显示提示信息 - 改进版，确保在所有设备上正常工作
             function showToast(message) {
+                // 先移除可能存在的旧提示
+                const oldToasts = toastContainer.querySelectorAll('div');
+                oldToasts.forEach(toast => toast.remove());
+                
+                // 创建新提示
                 const toast = document.createElement('div');
-                toast.className = 'bg-white px-4 py-2 rounded-lg shadow-lg text-gray-800 toast-animation';
+                toast.className = 'bg-white px-4 py-3 rounded-lg shadow-lg text-gray-800 toast-enter whitespace-nowrap';
                 toast.textContent = message;
                 toastContainer.appendChild(toast);
                 
-                // 3秒后自动移除提示
+                // 2秒后开始淡出动画并移除
                 setTimeout(() => {
-                    toast.remove();
-                }, 3000);
+                    toast.classList.remove('toast-enter');
+                    toast.classList.add('toast-exit');
+                    
+                    // 动画结束后彻底移除元素
+                    toast.addEventListener('animationend', function handler() {
+                        toast.remove();
+                        toast.removeEventListener('animationend', handler);
+                    }, { once: true });
+                }, 2000);
             }
             
             // 发送消息
@@ -224,16 +239,12 @@
                 const message = messageInput.value.trim();
                 if (!message) return;
                 
-                // 转换到聊天模式
                 convertToChatMode();
-                
-                // 添加用户消息
                 addMessageToChat(message, 'user');
                 
-                // 显示提示信息
+                // 显示电影推荐提示
                 showToast("或许《三傻大闹宝莱坞》是个不错的选择");
                 
-                // 清空输入框
                 messageInput.value = '';
                 messageInput.style.height = 'auto';
                 
@@ -252,16 +263,13 @@
             
             // 开始语音输入
             function startVoiceInput() {
-                // 显示录音模态框
                 voiceModal.classList.remove('hidden');
             }
             
             // 结束语音输入并处理结果
             function stopVoiceInput() {
-                // 隐藏录音模态框
                 voiceModal.classList.add('hidden');
                 
-                // 模拟语音识别过程
                 setTimeout(() => {
                     const sampleTexts = [
                         "你好，今天天气怎么样？",
@@ -271,16 +279,12 @@
                     ];
                     const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
                     
-                    // 转换到聊天模式
                     convertToChatMode();
-                    
-                    // 添加语音识别结果到聊天记录
                     addMessageToChat(randomText, 'user');
                     
-                    // 显示提示信息
+                    // 显示电影推荐提示
                     showToast("或许《三傻大闹宝莱坞》是个不错的选择");
                     
-                    // 模拟AI回复
                     setTimeout(() => {
                         const responses = [
                             "今天天气晴朗，气温25℃，适合户外活动。",
@@ -292,7 +296,6 @@
                         addMessageToChat(randomResponse, 'ai');
                     }, 1200);
                     
-                    // 确保保持在语音输入模式
                     if (currentMode !== 'voice') {
                         voiceInputBtn.click();
                     }
@@ -301,12 +304,10 @@
             
             // 转换到聊天模式
             function convertToChatMode() {
-                // 移除初始欢迎区域（如果存在）
                 const welcomeArea = document.querySelector('.flex-1.flex-col');
                 if (welcomeArea) {
                     welcomeArea.remove();
                     
-                    // 创建聊天记录区域
                     const chatContainer = document.createElement('div');
                     chatContainer.id = 'chat-container';
                     chatContainer.className = 'flex-1 overflow-y-auto scrollbar-hide space-y-4 mb-4';
@@ -322,7 +323,6 @@
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `flex items-start ${sender === 'user' ? 'justify-end' : ''} space-x-3 animate-fade-in`;
                 
-                // 头像
                 const avatar = document.createElement('div');
                 avatar.className = `w-9 h-9 rounded-full ${sender === 'user' ? 'bg-gray-200' : 'bg-gradient-ai'} flex-shrink-0`;
                 
@@ -334,7 +334,6 @@
                 avatarImg.className = 'w-full h-full object-cover rounded-full';
                 avatar.appendChild(avatarImg);
                 
-                // 消息气泡
                 const messageBubble = document.createElement('div');
                 messageBubble.className = `
                     px-4 py-2 rounded-2xl max-w-[75%]
@@ -345,7 +344,6 @@
                 `;
                 messageBubble.textContent = message;
                 
-                // 组装消息
                 if (sender === 'user') {
                     messageDiv.appendChild(messageBubble);
                     messageDiv.appendChild(avatar);
@@ -368,10 +366,7 @@
                 }
             });
             
-            // 单击开始录音
             voiceButton.addEventListener('click', startVoiceInput);
-            
-            // 单击完成录音
             stopVoiceBtn.addEventListener('click', stopVoiceInput);
             
             // 添加动画样式
