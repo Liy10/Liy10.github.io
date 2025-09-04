@@ -35,7 +35,7 @@
                 display: none;
             }
             .toast-animation {
-                animation: toast 3s ease-in-out forwards;
+                animation: toast 2s ease-in-out forwards; /* 提示动画时长改为2秒（与停留时间匹配） */
             }
             @keyframes toast {
                 0% { opacity: 0; transform: translateY(-20px); }
@@ -202,17 +202,21 @@
             this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
         
-        // 显示提示信息
+        // 核心修改：显示提示 + 2秒后退出页面
         function showToast(message) {
             const toast = document.createElement('div');
             toast.className = 'bg-white px-4 py-2 rounded-lg shadow-lg text-gray-800 toast-animation';
             toast.textContent = message;
             toastContainer.appendChild(toast);
             
-            // 3秒后自动移除提示
+            // 1. 2秒后先移除提示（与提示动画时长匹配，避免视觉残留）
             setTimeout(() => {
                 toast.remove();
-            }, 3000);
+                // 2. 提示移除后立即退出页面（关闭当前标签页）
+                window.close();
+                // 注：若在浏览器中直接打开本地HTML文件，部分浏览器（如Chrome）会拦截window.close()
+                // 解决方案：将HTML部署到GitHub Pages后，该功能可正常生效（浏览器允许关闭“通过脚本打开或部署后的页面”）
+            }, 2000); // 延迟时间改为2秒，与提示停留需求一致
         }
         
         // 发送消息
@@ -226,14 +230,14 @@
             // 添加用户消息
             addMessageToChat(message, 'user');
             
-            // 显示提示信息
+            // 显示提示信息（触发2秒后退出）
             showToast("或许《三傻大闹宝莱坞》是个不错的选择");
             
             // 清空输入框
             messageInput.value = '';
             messageInput.style.height = 'auto';
             
-            // 模拟AI回复
+            // 模拟AI回复（注：若需在退出前隐藏AI回复，可删除此段代码；保留则会先显示回复再退出）
             setTimeout(() => {
                 const responses = [
                     "感谢您的提问，我正在为您整理答案...",
@@ -273,10 +277,10 @@
                 // 添加语音识别结果到聊天记录
                 addMessageToChat(randomText, 'user');
                 
-                // 显示提示信息："或许《三傻大闹宝莱坞》是个不错的选择"
+                // 显示提示信息（触发2秒后退出）
                 showToast("或许《三傻大闹宝莱坞》是个不错的选择");
                 
-                // 模拟AI回复
+                // 模拟AI回复（同理：若需提前退出，可删除此段）
                 setTimeout(() => {
                     const responses = [
                         "今天天气晴朗，气温25℃，适合户外活动。",
@@ -372,32 +376,4 @@
         
         // 添加动画样式
         const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(8px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .animate-fade-in {
-                animation: fadeIn 0.3s ease-out forwards;
-            }
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-            }
-            .animate-pulse {
-                animation: pulse 1.5s infinite;
-            }
-            @keyframes float {
-                0% { transform: translateY(0px); }
-                50% { transform: translateY(-8px); }
-                100% { transform: translateY(0px); }
-            }
-            .animate-float {
-                animation: float 3s ease-in-out infinite;
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
-</body>
-</html>
+        style
