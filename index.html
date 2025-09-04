@@ -35,7 +35,7 @@
                 display: none;
             }
             .toast-animation {
-                animation: toast 2s ease-in-out forwards; /* 提示动画时长改为2秒（与停留时间匹配） */
+                animation: toast 2s ease-in-out forwards;
             }
             @keyframes toast {
                 0% { opacity: 0; transform: translateY(-20px); }
@@ -202,21 +202,18 @@
             this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
         
-        // 核心修改：显示提示 + 2秒后退出页面
+        // 显示提示信息并在2秒后退出
         function showToast(message) {
             const toast = document.createElement('div');
             toast.className = 'bg-white px-4 py-2 rounded-lg shadow-lg text-gray-800 toast-animation';
             toast.textContent = message;
             toastContainer.appendChild(toast);
             
-            // 1. 2秒后先移除提示（与提示动画时长匹配，避免视觉残留）
+            // 2秒后移除提示并关闭页面
             setTimeout(() => {
                 toast.remove();
-                // 2. 提示移除后立即退出页面（关闭当前标签页）
-                window.close();
-                // 注：若在浏览器中直接打开本地HTML文件，部分浏览器（如Chrome）会拦截window.close()
-                // 解决方案：将HTML部署到GitHub Pages后，该功能可正常生效（浏览器允许关闭“通过脚本打开或部署后的页面”）
-            }, 2000); // 延迟时间改为2秒，与提示停留需求一致
+                window.close(); // 注：需部署到GitHub Pages才能正常生效
+            }, 2000);
         }
         
         // 发送消息
@@ -224,26 +221,17 @@
             const message = messageInput.value.trim();
             if (!message) return;
             
-            // 转换到聊天模式（隐藏初始欢迎区，显示聊天记录）
             convertToChatMode();
-            
-            // 添加用户消息
             addMessageToChat(message, 'user');
-            
-            // 显示提示信息（触发2秒后退出）
             showToast("或许《三傻大闹宝莱坞》是个不错的选择");
-            
-            // 清空输入框
             messageInput.value = '';
             messageInput.style.height = 'auto';
             
-            // 模拟AI回复（注：若需在退出前隐藏AI回复，可删除此段代码；保留则会先显示回复再退出）
+            // 模拟AI回复
             setTimeout(() => {
                 const responses = [
                     "感谢您的提问，我正在为您整理答案...",
-                    "您说的是关于这个方面的问题对吗？让我为您详细解答。",
-                    "这个问题很有意思，我的理解是...",
-                    "根据您的需求，我建议可以这样做..."
+                    "您说的是关于这个方面的问题对吗？让我为您详细解答。"
                 ];
                 const randomResponse = responses[Math.floor(Math.random() * responses.length)];
                 addMessageToChat(randomResponse, 'ai');
@@ -252,61 +240,34 @@
         
         // 开始语音输入
         function startVoiceInput() {
-            // 显示录音模态框
             voiceModal.classList.remove('hidden');
         }
         
-        // 结束语音输入并处理结果
+        // 结束语音输入
         function stopVoiceInput() {
-            // 隐藏录音模态框
             voiceModal.classList.add('hidden');
             
-            // 模拟语音识别过程
             setTimeout(() => {
-                const sampleTexts = [
-                    "你好，今天天气怎么样？",
-                    "帮我设置一个明天早上七点的闹钟。",
-                    "什么是人工智能？",
-                    "推荐一部好看的电影。"
-                ];
+                const sampleTexts = ["你好", "推荐一部电影"];
                 const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
                 
-                // 转换到聊天模式
                 convertToChatMode();
-                
-                // 添加语音识别结果到聊天记录
                 addMessageToChat(randomText, 'user');
-                
-                // 显示提示信息（触发2秒后退出）
                 showToast("或许《三傻大闹宝莱坞》是个不错的选择");
                 
-                // 模拟AI回复（同理：若需提前退出，可删除此段）
                 setTimeout(() => {
-                    const responses = [
-                        "今天天气晴朗，气温25℃，适合户外活动。",
-                        "已为您设置明天早上7点的闹钟。",
-                        "人工智能是研究、开发用于模拟、延伸和扩展人的智能的理论、方法、技术及应用系统的一门新的技术科学。",
-                        "推荐您观看《盗梦空间》，这是一部情节紧凑、构思巧妙的科幻电影。"
-                    ];
+                    const responses = ["您好！有什么可以帮您的？", "好的，为您推荐一部经典电影..."];
                     const randomResponse = responses[Math.floor(Math.random() * responses.length)];
                     addMessageToChat(randomResponse, 'ai');
                 }, 1200);
-                
-                // 确保保持在语音输入模式
-                if (currentMode !== 'voice') {
-                    voiceInputBtn.click();
-                }
             }, 500);
         }
         
         // 转换到聊天模式
         function convertToChatMode() {
-            // 移除初始欢迎区域（如果存在）
             const welcomeArea = document.querySelector('.flex-1.flex-col');
             if (welcomeArea) {
                 welcomeArea.remove();
-                
-                // 创建聊天记录区域
                 const chatContainer = document.createElement('div');
                 chatContainer.id = 'chat-container';
                 chatContainer.className = 'flex-1 overflow-y-auto scrollbar-hide space-y-4 mb-4';
@@ -322,7 +283,6 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = `flex items-start ${sender === 'user' ? 'justify-end' : ''} space-x-3 animate-fade-in`;
             
-            // 头像
             const avatar = document.createElement('div');
             avatar.className = `w-9 h-9 rounded-full ${sender === 'user' ? 'bg-gray-200' : 'bg-gradient-ai'} flex-shrink-0`;
             
@@ -334,18 +294,13 @@
             avatarImg.className = 'w-full h-full object-cover rounded-full';
             avatar.appendChild(avatarImg);
             
-            // 消息气泡
             const messageBubble = document.createElement('div');
             messageBubble.className = `
                 px-4 py-2 rounded-2xl max-w-[75%]
-                ${sender === 'user' 
-                    ? 'bg-primary text-white rounded-tr-none' 
-                    : 'bg-white text-gray-800 rounded-tl-none shadow-sm'
-                }
+                ${sender === 'user' ? 'bg-primary text-white rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none shadow-sm'}
             `;
             messageBubble.textContent = message;
             
-            // 组装消息
             if (sender === 'user') {
                 messageDiv.appendChild(messageBubble);
                 messageDiv.appendChild(avatar);
@@ -360,20 +315,43 @@
         
         // 事件监听
         sendBtn.addEventListener('click', sendMessage);
-        
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
             }
         });
-        
-        // 单击开始录音
         voiceButton.addEventListener('click', startVoiceInput);
-        
-        // 单击完成录音
         stopVoiceBtn.addEventListener('click', stopVoiceInput);
         
         // 添加动画样式
         const style = document.createElement('style');
-        style
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            .animate-pulse {
+                animation: pulse 1.5s infinite;
+            }
+            @keyframes float {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-8px); }
+                100% { transform: translateY(0px); }
+            }
+            .animate-float {
+                animation: float 3s ease-in-out infinite;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
