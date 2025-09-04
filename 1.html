@@ -295,15 +295,35 @@
             }, 500);
         });
         
-        // 7. 修复：关闭网页功能（兼容主流浏览器）
+        // 7. 核心修改：微信+普通浏览器通用关闭逻辑
         closePageBtn.addEventListener('click', () => {
-            // 标准关闭方式（对用户主动打开的页面有效）
-            window.close();
+            // 1. 判断是否在微信内置浏览器中（通过UserAgent识别）
+            const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
             
-            // 针对Chrome等浏览器的兼容处理（若标准方式失效，提示用户手动关闭）
-            if (window.opener === null) {
-                alert('若网页未自动关闭，请手动点击浏览器右上角关闭按钮');
+            if (isWeChat) {
+                // 微信环境：使用微信专属API关闭窗口
+                if (typeof WeixinJSBridge !== 'undefined') {
+                    // 若WeixinJSBridge已加载，直接调用关闭
+                    WeixinJSBridge.invoke('closeWindow', {}, (res) => {
+                        // 回调可忽略（微信关闭成功后无返回）
+                    });
+                } else {
+                    // 若WeixinJSBridge未加载，监听Ready事件后再关闭
+                    document.addEventListener('WeixinJSBridgeReady', () => {
+                        WeixinJSBridge.invoke('closeWindow');
+                    }, false);
+                }
+            } else {
+                // 非微信环境：保持原有关闭逻辑
+                window.close();
+                // 兼容提示（若标准关闭失效）
+                setTimeout(() => {
+                    alert('若网页未自动关闭，请手动点击浏览器右上角关闭按钮');
+                }, 500);
             }
+            
+            // 关闭弹窗（无论是否关闭成功，先隐藏弹窗）
+            closeModal.classList.add('hidden');
         });
         
         // 8. 辅助函数：切换到聊天模式（隐藏欢迎区，显示聊天记录）
