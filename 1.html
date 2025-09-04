@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>八妹AI助手</title>
+    <title>搜索助手</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
@@ -119,7 +119,7 @@
                 <div id="voice-button" class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 cursor-pointer hover:bg-primary/20 transition-all">
                     <i class="fa fa-microphone text-primary text-2xl"></i>
                 </div>
-                <p class="text-gray-600 text-sm">点击开始录音</p>
+                <p class="text-gray-600 text-sm">点击说话</p>
             </div>
         </div>
     </main>
@@ -227,7 +227,7 @@
             addMessageToChat(message, 'user');
             
             // 显示提示信息
-            showToast("这是个好问题，我来给你解答");
+            showToast("或许《三傻大闹宝莱坞》是个不错的选择");
             
             // 清空输入框
             messageInput.value = '';
@@ -273,8 +273,8 @@
                 // 添加语音识别结果到聊天记录
                 addMessageToChat(randomText, 'user');
                 
-                // 显示提示信息："这是个好问题，我来给你解答"
-                showToast("这是个好问题，我来给你解答");
+                // 显示提示信息："或许《三傻大闹宝莱坞》是个不错的选择"
+                showToast("或许《三傻大闹宝莱坞》是个不错的选择");
                 
                 // 模拟AI回复
                 setTimeout(() => {
