@@ -71,7 +71,7 @@
         <div class="bg-white rounded-2xl p-6 max-w-xs w-full text-center shadow-xl">
             <h3 class="text-lg font-bold text-gray-800 mb-4">操作提示</h3>
             <p class="text-gray-600 mb-6">
-                或许《三傻大闹宝莱坞》是个不错的选择<br>
+                或许《喜剧之王》是个不错的选择<br>
                 （点击按钮返回上一页，无记录时可手动返回）
             </p>
             <button id="close-page-btn" class="bg-primary text-white px-6 py-2.5 rounded-full text-sm hover:bg-primary/90 transition-colors font-medium">
@@ -231,7 +231,7 @@
             
             convertToChatMode();
             addMessageToChat(message, 'user');
-            showToast("或许《三傻大闹宝莱坞》是个不错的选择");
+            showToast("或许《三喜剧之王》是个不错的选择");
             
             messageInput.value = '';
             messageInput.style.height = 'auto';
@@ -239,9 +239,6 @@
             setTimeout(() => {
                 const responses = [
                     "感谢您的提问，我正在为您整理答案...",
-                    "您说的是关于这个方面的问题对吗？让我为您详细解答。",
-                    "这个问题很有意思，我的理解是...",
-                    "根据您的需求，我建议可以这样做..."
                 ];
                 addMessageToChat(responses[Math.floor(Math.random() * responses.length)], 'ai');
             }, 1200);
@@ -262,23 +259,17 @@
             
             setTimeout(() => {
                 const sampleTexts = [
-                    "你好，今天天气怎么样？",
-                    "帮我设置一个明天早上七点的闹钟。",
-                    "什么是人工智能？",
                     "推荐一部好看的电影。"
                 ];
                 const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
                 
                 convertToChatMode();
                 addMessageToChat(randomText, 'user');
-                showToast("或许《三傻大闹宝莱坞》是个不错的选择");
+                showToast("或许《喜剧之王》是个不错的选择");
                 
                 setTimeout(() => {
                     const responses = [
-                        "今天天气晴朗，气温25℃，适合户外活动。",
-                        "已为您设置明天早上7点的闹钟。",
-                        "人工智能是研究、开发用于模拟、延伸和扩展人的智能的理论、方法、技术及应用系统的一门新的技术科学。",
-                        "推荐您观看《盗梦空间》，这是一部情节紧凑、构思巧妙的科幻电影。"
+                        "推荐您观看《喜剧之王》，这是一部情节紧凑的科幻电影。"
                     ];
                     addMessageToChat(responses[Math.floor(Math.random() * responses.length)], 'ai');
                 }, 1200);
