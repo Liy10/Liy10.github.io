@@ -37,11 +37,34 @@
             .toast-animation {
                 animation: toast 3s ease-in-out forwards;
             }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            .animate-pulse {
+                animation: pulse 1.5s infinite;
+            }
+            .animate-float {
+                animation: float 3s ease-in-out infinite;
+            }
             @keyframes toast {
-                0% { opacity: 0; transform: translateY(-20px); }
+                0% { opacity: 0; transform: translateY(20px); }
                 20% { opacity: 1; transform: translateY(0); }
                 80% { opacity: 1; transform: translateY(0); }
-                100% { opacity: 0; transform: translateY(-20px); }
+                100% { opacity: 0; transform: translateY(20px); }
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            @keyframes float {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-8px); }
+                100% { transform: translateY(0px); }
             }
         }
     </style>
@@ -50,47 +73,28 @@
     <!-- 开始界面 -->
     <div id="start-screen" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
         <div class="w-48 h-48 rounded-full bg-gradient-ai p-2 shadow-lg mb-8 animate-float">
-            <img 
-                src="https://pic.pngsucai.com/00/84/32/b476d75b65aee365.webp" 
-                alt="八妹AI形象" 
-                class="w-full h-full object-cover rounded-full"
-            >
+            <img src="https://pic.pngsucai.com/00/84/32/b476d75b65aee365.webp" alt="八妹AI形象" class="w-full h-full object-cover rounded-full">
         </div>
         <h1 class="text-3xl font-bold text-gray-800 mb-2">智能搜索工具</h1>
-        <p class="text-gray-600 mb-8 text-center max-w-xs px-4">该工具可以进行搜索、答疑、写作等任务</p>
-        <button id="enter-button" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-full transition-all transform hover:scale-105 shadow-lg">
+        <p class="text-gray-600 mb-8 text-center max-w-xs px-4">可搜索、答疑、写作等</p>
+        <button id="enter-button" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-full transition-all hover:scale-105 shadow-lg">
             开始使用
         </button>
     </div>
 
-    <!-- 提示信息容器 -->
-    <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 pointer-events-none"></div>
-    
     <!-- 主要区域 -->
-    <main class="flex-1 flex flex-col max-w-md w-full mx-auto w-full p-4 opacity-0 transition-opacity duration-500">
-        <!-- 上方：AI形象展示和欢迎语 -->
+    <main class="flex-1 flex flex-col max-w-md w-full mx-auto p-4 opacity-0 transition-opacity duration-300">
+        <!-- 欢迎区 -->
         <div class="flex-1 flex flex-col items-center justify-center text-center py-8">
-            <!-- AI头像 -->
             <div class="w-40 h-40 rounded-full bg-gradient-ai p-2 shadow-lg mb-6 animate-float">
-                <img 
-                    src="https://pic.pngsucai.com/00/84/32/b476d75b65aee365.webp" 
-                    alt="八妹AI形象" 
-                    class="w-full h-full object-cover rounded-full"
-                >
+                <img src="https://pic.pngsucai.com/00/84/32/b476d75b65aee365.webp" alt="八妹AI形象" class="w-full h-full object-cover rounded-full">
             </div>
-            
-            <!-- 欢迎语 -->
-            <div class="space-y-3">
-                <h1 class="text-2xl font-bold text-gray-800">智能搜索工具</h1>
-                <p class="text-gray-600 text-base max-w-xs">
-                    该工具可以进行搜索、答疑、写作等任务
-                </p>
-            </div>
+            <h1 class="text-2xl font-bold text-gray-800">智能搜索工具</h1>
+            <p class="text-gray-600 text-base max-w-xs mt-2">可搜索、答疑、写作等</p>
         </div>
         
-        <!-- 下方：可切换的输入框 -->
+        <!-- 输入区 -->
         <div class="bg-white rounded-2xl shadow-md p-4 mb-6">
-            <!-- 输入模式切换 -->
             <div class="flex items-center space-x-2 mb-3">
                 <button id="text-input-btn" class="flex-1 py-2 rounded-lg bg-light text-gray-600 flex items-center justify-center space-x-2 transition-all">
                     <i class="fa fa-keyboard-o"></i>
@@ -102,19 +106,15 @@
                 </button>
             </div>
             
-            <!-- 文字输入区域 (默认隐藏) -->
+            <!-- 文字输入 (默认隐藏) -->
             <div id="text-input-container" class="hidden flex items-center space-x-2">
-                <textarea 
-                    id="message-input" 
-                    class="flex-1 border-none outline-none resize-none h-12 text-base placeholder-gray-400" 
-                    placeholder="请输入您的问题..."
-                ></textarea>
+                <textarea id="message-input" class="flex-1 border-none outline-none resize-none h-12 text-base placeholder-gray-400" placeholder="请输入您的问题..."></textarea>
                 <button id="send-btn" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors">
                     <i class="fa fa-paper-plane"></i>
                 </button>
             </div>
             
-            <!-- 语音输入区域 (默认显示) -->
+            <!-- 语音输入 (默认显示) -->
             <div id="voice-input-container" class="py-6 flex flex-col items-center justify-center">
                 <div id="voice-button" class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 cursor-pointer hover:bg-primary/20 transition-all">
                     <i class="fa fa-microphone text-primary text-2xl"></i>
@@ -124,7 +124,7 @@
         </div>
     </main>
 
-    <!-- 语音输入状态提示 -->
+    <!-- 语音录音弹窗 -->
     <div id="voice-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl p-6 max-w-xs w-full text-center">
             <div class="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center animate-pulse">
@@ -139,35 +139,28 @@
     </div>
 
     <script>
-        // DOM元素获取（移除返回上一页相关元素）
+        // DOM元素
         const startScreen = document.getElementById('start-screen');
         const enterButton = document.getElementById('enter-button');
         const mainContent = document.querySelector('main');
-        const textInputBtn = document.getElementById('text-input-btn');
-        const voiceInputBtn = document.getElementById('voice-input-btn');
-        const textInputContainer = document.getElementById('text-input-container');
-        const voiceInputContainer = document.getElementById('voice-input-container');
-        const messageInput = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const voiceButton = document.getElementById('voice-button');
-        const voiceModal = document.getElementById('voice-modal');
-        const stopVoiceBtn = document.getElementById('stop-voice-btn');
-        const toastContainer = document.getElementById('toast-container');
+        const [textInputBtn, voiceInputBtn] = [document.getElementById('text-input-btn'), document.getElementById('voice-input-btn')];
+        const [textInputContainer, voiceInputContainer] = [document.getElementById('text-input-container'), document.getElementById('voice-input-container')];
+        const [messageInput, sendBtn] = [document.getElementById('message-input'), document.getElementById('send-btn')];
+        const [voiceButton, voiceModal, stopVoiceBtn] = [document.getElementById('voice-button'), document.getElementById('voice-modal'), document.getElementById('stop-voice-btn')];
         
-        // 输入模式管理 - 默认语音输入
+        // 输入模式 (默认语音)
         let currentMode = 'voice';
-        
-        // 1. “开始使用”按钮点击逻辑（保持原有过渡效果）
+
+        // 1. 快速进入主界面
         enterButton.addEventListener('click', () => {
-            startScreen.style.transition = 'opacity 0.5s ease-out';
             startScreen.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => {
                 startScreen.style.display = 'none';
                 mainContent.classList.remove('opacity-0');
-            }, 500);
+            }, 300); // 缩短过渡时间
         });
-        
-        // 2. 输入模式切换逻辑（保持原有功能）
+
+        // 2. 切换输入模式
         textInputBtn.addEventListener('click', () => {
             if (currentMode !== 'text') {
                 currentMode = 'text';
@@ -179,7 +172,7 @@
                 voiceInputContainer.classList.add('hidden');
             }
         });
-        
+
         voiceInputBtn.addEventListener('click', () => {
             if (currentMode !== 'voice') {
                 currentMode = 'voice';
@@ -191,42 +184,37 @@
                 textInputContainer.classList.add('hidden');
             }
         });
-        
-        // 3. 文本框自动调整高度（保持原有功能）
+
+        // 3. 文本框自适应高度
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 100) + 'px'; // 限制最大高度
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
-        
-        // 4. 显示提示（移除返回弹窗相关逻辑）
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'bg-white px-4 py-2 rounded-lg shadow-lg text-gray-800 toast-animation';
-            toast.textContent = message;
-            toastContainer.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+
+        // 4. 中间蓝底白字提示
+        function showCenterTip(message) {
+            const tip = document.createElement('div');
+            tip.className = 'fixed inset-0 flex items-center justify-center pointer-events-none z-40';
+            tip.innerHTML = `<div class="bg-primary text-white px-6 py-3 rounded-lg text-center toast-animation">${message}</div>`;
+            document.body.appendChild(tip);
+            setTimeout(() => tip.remove(), 3000);
         }
-        
-        // 5. 文字发送逻辑（保持原有功能）
+
+        // 5. 文字发送
         function sendMessage() {
-            const message = messageInput.value.trim();
-            if (!message) return;
+            const msg = messageInput.value.trim();
+            if (!msg) return;
             
             convertToChatMode();
-            addMessageToChat(message, 'user');
-            showToast("或许《三喜剧之王》是个不错的选择");
+            addChatMsg(msg, 'user');
+            showCenterTip("或许《喜剧之王》是个不错的选择");
             
             messageInput.value = '';
             messageInput.style.height = 'auto';
             
-            setTimeout(() => {
-                const responses = [
-                    "感谢您的提问，我正在为您整理答案...",
-                ];
-                addMessageToChat(responses[Math.floor(Math.random() * responses.length)], 'ai');
-            }, 1200);
+            setTimeout(() => addChatMsg("感谢您的提问，我正在为您整理答案...", 'ai'), 1200);
         }
-        
+
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -234,34 +222,24 @@
                 sendMessage();
             }
         });
-        
-        // 6. 语音输入逻辑（保持原有功能）
+
+        // 6. 语音输入
         voiceButton.addEventListener('click', () => voiceModal.classList.remove('hidden'));
         stopVoiceBtn.addEventListener('click', () => {
             voiceModal.classList.add('hidden');
             
             setTimeout(() => {
-                const sampleTexts = [
-                    "推荐一部好看的喜剧电影。"
-                ];
-                const randomText = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
-                
+                const sampleMsg = "推荐一部好看的喜剧电影。";
                 convertToChatMode();
-                addMessageToChat(randomText, 'user');
-                showToast("或许《喜剧之王》是个不错的选择");
+                addChatMsg(sampleMsg, 'user');
+                showCenterTip("或许《喜剧之王》是个不错的选择");
                 
-                setTimeout(() => {
-                    const responses = [
-                        "推荐您观看《喜剧之王》，这是一部情节紧凑的喜剧电影。"
-                    ];
-                    addMessageToChat(responses[Math.floor(Math.random() * responses.length)], 'ai');
-                }, 1200);
-                
-                if (currentMode !== 'voice') voiceInputBtn.click();
+                setTimeout(() => addChatMsg("推荐您观看《喜剧之王》，这是一部情节紧凑的喜剧电影。", 'ai'), 1200);
+                currentMode !== 'voice' && voiceInputBtn.click();
             }, 500);
         });
-        
-        // 7. 辅助函数：切换到聊天模式（保持原有功能）
+
+        // 7. 切换聊天模式
         function convertToChatMode() {
             const welcomeArea = document.querySelector('.flex-1.flex-col');
             if (welcomeArea) {
@@ -272,55 +250,30 @@
                 mainContent.insertBefore(chatContainer, mainContent.firstChild);
             }
         }
-        
-        // 8. 辅助函数：添加聊天消息（保持原有功能）
-        function addMessageToChat(message, sender) {
+
+        // 8. 添加聊天消息
+        function addChatMsg(msg, sender) {
             const chatContainer = document.getElementById('chat-container');
             if (!chatContainer) return;
             
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `flex items-start ${sender === 'user' ? 'justify-end' : ''} space-x-3 animate-fade-in`;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex items-start ${sender === 'user' ? 'justify-end' : ''} space-x-3 animate-fade-in`;
             
             // 头像
             const avatar = document.createElement('div');
             avatar.className = `w-9 h-9 rounded-full flex-shrink-0 ${sender === 'user' ? 'bg-gray-200' : 'bg-gradient-ai'}`;
-            const avatarImg = document.createElement('img');
-            avatarImg.src = sender === 'user' 
-                ? 'https://picsum.photos/200/200?random=2' 
-                : 'https://picsum.photos/300/300?random=1';
-            avatarImg.alt = `${sender === 'user' ? '用户' : '八妹AI'}头像`;
-            avatarImg.className = 'w-full h-full object-cover rounded-full';
-            avatar.appendChild(avatarImg);
+            avatar.innerHTML = `<img src="https://picsum.photos/200/200?random=${sender === 'user' ? 2 : 1}" alt="${sender === 'user' ? '用户' : 'AI'}头像" class="w-full h-full object-cover rounded-full">`;
             
             // 消息气泡
             const bubble = document.createElement('div');
-            bubble.className = `px-4 py-2 rounded-2xl max-w-[75%] ${
-                sender === 'user' 
-                    ? 'bg-primary text-white rounded-tr-none' 
-                    : 'bg-white text-gray-800 rounded-tl-none shadow-sm'
-            }`;
-            bubble.textContent = message;
+            bubble.className = `px-4 py-2 rounded-2xl max-w-[75%] ${sender === 'user' ? 'bg-primary text-white rounded-tr-none' : 'bg-white text-gray-800 rounded-tl-none shadow-sm'}`;
+            bubble.textContent = msg;
             
-            // 组装消息
-            sender === 'user' 
-                ? (messageDiv.append(bubble, avatar)) 
-                : (messageDiv.append(avatar, bubble));
-            
-            chatContainer.appendChild(messageDiv);
+            // 组装
+            sender === 'user' ? msgDiv.append(bubble, avatar) : msgDiv.append(avatar, bubble);
+            chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
-        
-        // 9. 动画样式（保持原有效果）
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-            .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-            @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-            .animate-pulse { animation: pulse 1.5s infinite; }
-            @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
-            .animate-float { animation: float 3s ease-in-out infinite; }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 </html>
