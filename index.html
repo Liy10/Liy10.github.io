@@ -66,20 +66,6 @@
     <!-- 提示信息容器 -->
     <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-40 pointer-events-none"></div>
     
-    <!-- 关闭网页弹窗 (优化提示文案) -->
-    <div id="close-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl p-6 max-w-xs w-full text-center shadow-xl">
-            <h3 class="text-lg font-bold text-gray-800 mb-4">操作提示</h3>
-            <p class="text-gray-600 mb-6">
-                或许《喜剧之王》是个不错的选择<br>
-                （点击按钮返回上一页，无记录时可手动返回）
-            </p>
-            <button id="close-page-btn" class="bg-primary text-white px-6 py-2.5 rounded-full text-sm hover:bg-primary/90 transition-colors font-medium">
-                返回上一页
-            </button>
-        </div>
-    </div>
-    
     <!-- 主要区域 -->
     <main class="flex-1 flex flex-col max-w-md w-full mx-auto w-full p-4 opacity-0 transition-opacity duration-500">
         <!-- 上方：AI形象展示和欢迎语 -->
@@ -153,7 +139,7 @@
     </div>
 
     <script>
-        // DOM元素获取（确保所有元素正确获取）
+        // DOM元素获取（移除返回上一页相关元素）
         const startScreen = document.getElementById('start-screen');
         const enterButton = document.getElementById('enter-button');
         const mainContent = document.querySelector('main');
@@ -167,8 +153,6 @@
         const voiceModal = document.getElementById('voice-modal');
         const stopVoiceBtn = document.getElementById('stop-voice-btn');
         const toastContainer = document.getElementById('toast-container');
-        const closeModal = document.getElementById('close-modal');
-        const closePageBtn = document.getElementById('close-page-btn');
         
         // 输入模式管理 - 默认语音输入
         let currentMode = 'voice';
@@ -214,14 +198,13 @@
             this.style.height = Math.min(this.scrollHeight, 100) + 'px'; // 限制最大高度
         });
         
-        // 4. 显示提示+弹出关闭弹窗（保持原有逻辑关联）
+        // 4. 显示提示（移除返回弹窗相关逻辑）
         function showToast(message) {
             const toast = document.createElement('div');
             toast.className = 'bg-white px-4 py-2 rounded-lg shadow-lg text-gray-800 toast-animation';
             toast.textContent = message;
             toastContainer.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
-            closeModal.classList.remove('hidden');
         }
         
         // 5. 文字发送逻辑（保持原有功能）
@@ -278,29 +261,7 @@
             }, 500);
         });
         
-        // 7. 核心优化：微信/普通浏览器通用「返回上一页」逻辑
-        closePageBtn.addEventListener('click', () => {
-            // 检测是否为微信内置浏览器
-            const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
-            
-            // 判断是否有可返回的历史记录（length>1表示非入口页）
-            if (window.history.length > 1) {
-                // 微信/普通浏览器统一调用返回上一页
-                window.history.back();
-            } else {
-                // 无历史记录时，根据环境给出提示
-                if (isWeChat) {
-                    alert('当前是入口页，无历史记录可返回\n可点击微信顶部"×"或手机返回键退出');
-                } else {
-                    alert('当前是入口页，无历史记录可返回\n可手动关闭浏览器标签页');
-                }
-            }
-            
-            // 隐藏弹窗（无论是否返回成功，先关闭弹窗）
-            closeModal.classList.add('hidden');
-        });
-        
-        // 8. 辅助函数：切换到聊天模式（保持原有功能）
+        // 7. 辅助函数：切换到聊天模式（保持原有功能）
         function convertToChatMode() {
             const welcomeArea = document.querySelector('.flex-1.flex-col');
             if (welcomeArea) {
@@ -312,7 +273,7 @@
             }
         }
         
-        // 9. 辅助函数：添加聊天消息（保持原有功能）
+        // 8. 辅助函数：添加聊天消息（保持原有功能）
         function addMessageToChat(message, sender) {
             const chatContainer = document.getElementById('chat-container');
             if (!chatContainer) return;
@@ -349,7 +310,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
-        // 10. 动画样式（保持原有效果）
+        // 9. 动画样式（保持原有效果）
         const style = document.createElement('style');
         style.textContent = `
             @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
