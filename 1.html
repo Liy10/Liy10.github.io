@@ -2,10 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
     <title>搜索助手</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -39,12 +39,15 @@
             }
             .animate-fade-in {
                 animation: fadeIn 0.3s ease-out forwards;
+                will-change: opacity, transform;
             }
             .animate-pulse {
                 animation: pulse 1.5s infinite;
+                will-change: transform;
             }
             .animate-float {
                 animation: float 3s ease-in-out infinite;
+                will-change: transform;
             }
             @keyframes toast {
                 0% { opacity: 0; transform: translateY(20px); }
@@ -73,7 +76,14 @@
     <!-- 开始界面 -->
     <div id="start-screen" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
         <div class="w-48 h-48 rounded-full bg-gradient-ai p-2 shadow-lg mb-8 animate-float">
-            <img src="https://pic1.imgdb.cn/item/68be30a958cb8da5c887470f.png" alt="八妹AI形象" class="w-full h-full object-cover rounded-full">
+            <img src="https://pic1.imgdb.cn/item/68be30a958cb8da5c887470f.png" 
+                 alt="八妹AI形象" 
+                 class="w-full h-full object-cover rounded-full"
+                 width="192" 
+                 height="192"
+                 loading="lazy"
+                 style="opacity:0;transition:opacity 0.3s ease"
+                 onload="this.style.opacity=1">
         </div>
         <h1 class="text-3xl font-bold text-gray-800 mb-2">嗨！我是小安</h1>
         <p class="text-gray-600 mb-8 text-center max-w-xs px-4">我可以帮你搜索、答疑、写作，请把你的任务交给我吧~</p>
@@ -87,7 +97,14 @@
         <!-- 欢迎区 -->
         <div class="flex-1 flex flex-col items-center justify-center text-center py-8">
             <div class="w-40 h-40 rounded-full bg-gradient-ai p-2 shadow-lg mb-6 animate-float">
-                <img src="https://pic1.imgdb.cn/item/68be30a958cb8da5c887470f.png" alt="八妹AI形象" class="w-full h-full object-cover rounded-full">
+                <img src="https://pic1.imgdb.cn/item/68be30a958cb8da5c887470f.png" 
+                     alt="八妹AI形象" 
+                     class="w-full h-full object-cover rounded-full"
+                     width="160" 
+                     height="160"
+                     loading="lazy"
+                     style="opacity:0;transition:opacity 0.3s ease"
+                     onload="this.style.opacity=1">
             </div>
             <h1 class="text-2xl font-bold text-gray-800">嗨！我是小安</h1>
             <p class="text-gray-600 text-base max-w-xs mt-2">我可以帮你搜索、答疑、写作，请把你的任务交给我吧~</p>
@@ -97,27 +114,40 @@
         <div class="bg-white rounded-2xl shadow-md p-4 mb-6">
             <div class="flex items-center space-x-2 mb-3">
                 <button id="text-input-btn" class="flex-1 py-2 rounded-lg bg-light text-gray-600 flex items-center justify-center space-x-2 transition-all">
-                    <i class="fa fa-keyboard-o"></i>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2z"></path>
+                    </svg>
                     <span>文字</span>
                 </button>
                 <button id="voice-input-btn" class="flex-1 py-2 rounded-lg bg-primary text-white flex items-center justify-center space-x-2 transition-all">
-                    <i class="fa fa-microphone"></i>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
                     <span>语音</span>
                 </button>
             </div>
             
             <!-- 文字输入 (默认隐藏) -->
             <div id="text-input-container" class="hidden flex items-center space-x-2">
-                <textarea id="message-input" class="flex-1 border-none outline-none resize-none h-12 text-base placeholder-gray-400" placeholder="请输入您的问题..."></textarea>
+                <textarea id="message-input" 
+                          class="flex-1 border-none outline-none resize-none h-12 text-base placeholder-gray-400" 
+                          placeholder="请输入您的问题..."
+                          autocorrect="off"
+                          autocapitalize="off"
+                          spellcheck="false"></textarea>
                 <button id="send-btn" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors">
-                    <i class="fa fa-paper-plane"></i>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0v8m8-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                 </button>
             </div>
             
             <!-- 语音输入 (默认显示) -->
             <div id="voice-input-container" class="py-6 flex flex-col items-center justify-center">
                 <div id="voice-button" class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 cursor-pointer hover:bg-primary/20 transition-all">
-                    <i class="fa fa-microphone text-primary text-2xl"></i>
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
                 </div>
                 <p class="text-gray-600 text-sm">点击说话</p>
             </div>
@@ -128,7 +158,9 @@
     <div id="voice-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl p-6 max-w-xs w-full text-center">
             <div class="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center animate-pulse">
-                <i class="fa fa-microphone text-primary text-2xl"></i>
+                <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
             </div>
             <h3 class="text-lg font-bold mb-1">正在录音</h3>
             <p class="text-gray-500 text-sm mb-4">请说出您的问题</p>
@@ -139,84 +171,100 @@
     </div>
 
     <script>
-        // DOM元素
-        const startScreen = document.getElementById('start-screen');
-        const enterButton = document.getElementById('enter-button');
-        const mainContent = document.querySelector('main');
-        const [textInputBtn, voiceInputBtn] = [document.getElementById('text-input-btn'), document.getElementById('voice-input-btn')];
-        const [textInputContainer, voiceInputContainer] = [document.getElementById('text-input-container'), document.getElementById('voice-input-container')];
-        const [messageInput, sendBtn] = [document.getElementById('message-input'), document.getElementById('send-btn')];
-        const [voiceButton, voiceModal, stopVoiceBtn] = [document.getElementById('voice-button'), document.getElementById('voice-modal'), document.getElementById('stop-voice-btn')];
+        // 优化DOM查询性能，使用缓存
+        const dom = {
+            startScreen: document.getElementById('start-screen'),
+            enterButton: document.getElementById('enter-button'),
+            mainContent: document.querySelector('main'),
+            textInputBtn: document.getElementById('text-input-btn'),
+            voiceInputBtn: document.getElementById('voice-input-btn'),
+            textInputContainer: document.getElementById('text-input-container'),
+            voiceInputContainer: document.getElementById('voice-input-container'),
+            messageInput: document.getElementById('message-input'),
+            sendBtn: document.getElementById('send-btn'),
+            voiceButton: document.getElementById('voice-button'),
+            voiceModal: document.getElementById('voice-modal'),
+            stopVoiceBtn: document.getElementById('stop-voice-btn'),
+            chatContainer: null
+        };
         
-        // 输入模式 (默认语音)
         let currentMode = 'voice';
 
         // 1. 快速进入主界面
-        enterButton.addEventListener('click', () => {
-            startScreen.classList.add('opacity-0', 'pointer-events-none');
+        dom.enterButton.addEventListener('click', () => {
+            dom.startScreen.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => {
-                startScreen.style.display = 'none';
-                mainContent.classList.remove('opacity-0');
-            }, 300); // 缩短过渡时间
+                dom.startScreen.style.display = 'none';
+                dom.mainContent.classList.remove('opacity-0');
+            }, 200); // 缩短过渡时间，加快响应
         });
 
         // 2. 切换输入模式
-        textInputBtn.addEventListener('click', () => {
+        dom.textInputBtn.addEventListener('click', () => {
             if (currentMode !== 'text') {
                 currentMode = 'text';
-                textInputBtn.classList.replace('bg-light', 'bg-primary');
-                textInputBtn.classList.replace('text-gray-600', 'text-white');
-                voiceInputBtn.classList.replace('bg-primary', 'bg-light');
-                voiceInputBtn.classList.replace('text-white', 'text-gray-600');
-                textInputContainer.classList.remove('hidden');
-                voiceInputContainer.classList.add('hidden');
+                dom.textInputBtn.classList.replace('bg-light', 'bg-primary');
+                dom.textInputBtn.classList.replace('text-gray-600', 'text-white');
+                dom.voiceInputBtn.classList.replace('bg-primary', 'bg-light');
+                dom.voiceInputBtn.classList.replace('text-white', 'text-gray-600');
+                dom.textInputContainer.classList.remove('hidden');
+                dom.voiceInputContainer.classList.add('hidden');
+                dom.messageInput.focus();
             }
         });
 
-        voiceInputBtn.addEventListener('click', () => {
+        dom.voiceInputBtn.addEventListener('click', () => {
             if (currentMode !== 'voice') {
                 currentMode = 'voice';
-                voiceInputBtn.classList.replace('bg-light', 'bg-primary');
-                voiceInputBtn.classList.replace('text-gray-600', 'text-white');
-                textInputBtn.classList.replace('bg-primary', 'bg-light');
-                textInputBtn.classList.replace('text-white', 'text-gray-600');
-                voiceInputContainer.classList.remove('hidden');
-                textInputContainer.classList.add('hidden');
+                dom.voiceInputBtn.classList.replace('bg-light', 'bg-primary');
+                dom.voiceInputBtn.classList.replace('text-gray-600', 'text-white');
+                dom.textInputBtn.classList.replace('bg-primary', 'bg-light');
+                dom.textInputBtn.classList.replace('text-white', 'text-gray-600');
+                dom.voiceInputContainer.classList.remove('hidden');
+                dom.textInputContainer.classList.add('hidden');
             }
         });
 
         // 3. 文本框自适应高度
-        messageInput.addEventListener('input', function() {
+        dom.messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
 
-        // 4. 中间蓝底白字提示
+        // 4. 中间提示（优化创建逻辑，避免重复创建DOM）
+        let centerTip = null;
         function showCenterTip(message) {
-            const tip = document.createElement('div');
-            tip.className = 'fixed inset-0 flex items-center justify-center pointer-events-none z-40';
-            tip.innerHTML = `<div class="bg-primary text-white px-6 py-3 rounded-lg text-center toast-animation">${message}</div>`;
-            document.body.appendChild(tip);
-            setTimeout(() => tip.remove(), 3000);
+            if (!centerTip) {
+                centerTip = document.createElement('div');
+                centerTip.className = 'fixed inset-0 flex items-center justify-center pointer-events-none z-40';
+                centerTip.innerHTML = '<div class="bg-primary text-white px-6 py-3 rounded-lg text-center toast-animation"></div>';
+                document.body.appendChild(centerTip);
+            }
+            const tipContent = centerTip.querySelector('div');
+            tipContent.textContent = message;
+            // 重置动画
+            tipContent.classList.remove('toast-animation');
+            void tipContent.offsetWidth; // 触发重绘
+            tipContent.classList.add('toast-animation');
         }
 
         // 5. 文字发送
         function sendMessage() {
-            const msg = messageInput.value.trim();
+            const msg = dom.messageInput.value.trim();
             if (!msg) return;
             
             convertToChatMode();
             addChatMsg(msg, 'user');
             showCenterTip("或许《喜剧之王》是个不错的选择");
             
-            messageInput.value = '';
-            messageInput.style.height = 'auto';
+            dom.messageInput.value = '';
+            dom.messageInput.style.height = 'auto';
             
-            setTimeout(() => addChatMsg("感谢您的提问，我正在为您整理答案...", 'ai'), 1200);
+            setTimeout(() => addChatMsg("感谢您的提问，我正在为您整理答案...", 'ai'), 1000);
         }
 
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keydown', (e) => {
+        dom.sendBtn.addEventListener('click', sendMessage);
+        dom.messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
@@ -224,9 +272,9 @@
         });
 
         // 6. 语音输入
-        voiceButton.addEventListener('click', () => voiceModal.classList.remove('hidden'));
-        stopVoiceBtn.addEventListener('click', () => {
-            voiceModal.classList.add('hidden');
+        dom.voiceButton.addEventListener('click', () => dom.voiceModal.classList.remove('hidden'));
+        dom.stopVoiceBtn.addEventListener('click', () => {
+            dom.voiceModal.classList.add('hidden');
             
             setTimeout(() => {
                 const sampleMsg = "推荐一部好看的喜剧电影。";
@@ -234,27 +282,28 @@
                 addChatMsg(sampleMsg, 'user');
                 showCenterTip("或许《喜剧之王》是个不错的选择");
                 
-                setTimeout(() => addChatMsg("推荐您观看《喜剧之王》", 'ai'), 1200);
-                currentMode !== 'voice' && voiceInputBtn.click();
-            }, 500);
+                setTimeout(() => addChatMsg("推荐您观看《喜剧之王》", 'ai'), 800);
+                if (currentMode !== 'voice') dom.voiceInputBtn.click();
+            }, 300);
         });
 
         // 7. 切换聊天模式
         function convertToChatMode() {
+            if (dom.chatContainer) return;
+            
             const welcomeArea = document.querySelector('.flex-1.flex-col');
             if (welcomeArea) {
                 welcomeArea.remove();
-                const chatContainer = document.createElement('div');
-                chatContainer.id = 'chat-container';
-                chatContainer.className = 'flex-1 overflow-y-auto scrollbar-hide space-y-4 mb-4';
-                mainContent.insertBefore(chatContainer, mainContent.firstChild);
+                dom.chatContainer = document.createElement('div');
+                dom.chatContainer.id = 'chat-container';
+                dom.chatContainer.className = 'flex-1 overflow-y-auto scrollbar-hide space-y-4 mb-4';
+                dom.mainContent.insertBefore(dom.chatContainer, dom.mainContent.firstChild);
             }
         }
 
         // 8. 添加聊天消息
         function addChatMsg(msg, sender) {
-            const chatContainer = document.getElementById('chat-container');
-            if (!chatContainer) return;
+            if (!dom.chatContainer) return;
             
             const msgDiv = document.createElement('div');
             msgDiv.className = `flex items-start ${sender === 'user' ? 'justify-end' : ''} space-x-3 animate-fade-in`;
@@ -262,7 +311,12 @@
             // 头像
             const avatar = document.createElement('div');
             avatar.className = `w-9 h-9 rounded-full flex-shrink-0 ${sender === 'user' ? 'bg-gray-200' : 'bg-gradient-ai'}`;
-            avatar.innerHTML = `<img src="https://picsum.photos/200/200?random=${sender === 'user' ? 2 : 1}" alt="${sender === 'user' ? '用户' : 'AI'}头像" class="w-full h-full object-cover rounded-full">`;
+            avatar.innerHTML = `<img src="https://picsum.photos/36/36?random=${sender === 'user' ? 2 : 1}" 
+                                    alt="${sender === 'user' ? '用户' : 'AI'}头像" 
+                                    class="w-full h-full object-cover rounded-full"
+                                    width="36" 
+                                    height="36"
+                                    loading="lazy">`;
             
             // 消息气泡
             const bubble = document.createElement('div');
@@ -271,9 +325,30 @@
             
             // 组装
             sender === 'user' ? msgDiv.append(bubble, avatar) : msgDiv.append(avatar, bubble);
-            chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            dom.chatContainer.appendChild(msgDiv);
+            dom.chatContainer.scrollTop = dom.chatContainer.scrollHeight;
         }
+
+        // 移动端兼容性处理
+        (function() {
+            // 防止iOS双击缩放
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function(event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
+
+            // 确保在移动设备上正确获取视口高度
+            function setAppHeight() {
+                const doc = document.documentElement;
+                doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+            }
+            window.addEventListener('resize', setAppHeight);
+            setAppHeight();
+        })();
     </script>
 </body>
 </html>
