@@ -45,6 +45,14 @@
                 cursor: not-allowed !important;
                 pointer-events: none !important;
             }
+            /* 微信环境音频提示样式 */
+            .audio-tip {
+                animation: blink 1.5s infinite alternate;
+            }
+            @keyframes blink {
+                from { opacity: 0.7; }
+                to { opacity: 1; }
+            }
         }
     </style>
 </head>
@@ -54,8 +62,10 @@
         购物助手 Jamie
     </div>
 
-    <!-- 页面点击播放的音频（隐藏）- 移除autoplay，改为点击触发 -->
-    <audio id="introAudio" src="https://Liy10.github.io/introduction.MP3" preload="auto" hidden>
+    <!-- 页面点击播放的音频（隐藏）- 微信环境：添加OGG备用格式，确保兼容性 -->
+    <audio id="introAudio" preload="metadata" hidden>
+        <source src="https://Liy10.github.io/introduction.MP3" type="audio/mpeg">
+        <source src="https://Liy10.github.io/introduction.ogg" type="audio/ogg">
         您的浏览器不支持音频播放
     </audio>
 
@@ -123,41 +133,74 @@
         let currentMode = 'voice'; // 输入模式：默认语音
         let isIntroAudioPlayed = false; // intro音频是否已播放（防止重复点击播放）
         let isAudioPlaying = false; // 当前是否有音频在播放（控制重复按钮禁用）
-        let currentProductAudio = null; // 存储产品音频实例（便于精准停止）
+        
+        // 微信环境优化1：提前初始化产品音频实例（避免动态创建延迟导致播放失败）
+        let productAudio = new Audio();
+        productAudio.preload = 'metadata'; // 仅加载元数据，不加载完整音频
+        // 添加MP3+OGG双格式，兼容微信内置浏览器
+        const productAudioSource1 = document.createElement('source');
+        productAudioSource1.src = 'https://Liy10.github.io/last8158.MP3';
+        productAudioSource1.type = 'audio/mpeg';
+        const productAudioSource2 = document.createElement('source');
+        productAudioSource2.src = 'https://Liy10.github.io/last8158.ogg';
+        productAudioSource2.type = 'audio/ogg';
+        productAudio.appendChild(productAudioSource1);
+        productAudio.appendChild(productAudioSource2);
 
         // 资源链接
         const assistantAvatar = 'https://youke1.picui.cn/s1/2025/09/15/68c82b7d7f055.png';
         const headphoneImgSrc = 'https://youke1.picui.cn/s1/2025/09/16/68c8fd1f7e50b.jpg';
-        const productAudioUrl = 'https://Liy10.github.io/last8158.MP3'; // 产品介绍音频
 
-        // ---------------------- 核心1：停止所有音频（确保不同时播放） ----------------------
+        // ---------------------- 核心优化：停止所有音频（微信环境确保无残留） ----------------------
         function stopAllAudios() {
             // 停止intro音频
-            if (!introAudio.paused) {
+            if (introAudio && !introAudio.paused) {
                 introAudio.pause();
                 introAudio.currentTime = 0;
             }
-            // 停止产品音频（含重复播放的音频）
-            if (currentProductAudio && !currentProductAudio.paused) {
-                currentProductAudio.pause();
-                currentProductAudio.currentTime = 0;
+            // 停止产品音频
+            if (productAudio && !productAudio.paused) {
+                productAudio.pause();
+                productAudio.currentTime = 0;
             }
             // 重置音频播放状态
             isAudioPlaying = false;
         }
 
-        // 页面点击播放intro音频（仅播放一次）
-        function playIntroAudioOnClick() {
-            if (isIntroAudioPlayed || isAudioPlaying) return; // 已有音频播放时不触发
-            // 播放音频
-            introAudio.play().then(() => {
-                isAudioPlaying = true;
-                isIntroAudioPlayed = true;
-            }).catch(err => {
-                console.error('intro音频播放失败:', err);
+        // 微信环境优化2：强化用户交互触发（添加明确提示，确保点击事件被捕获）
+        function initAudioTrigger() {
+            // 1. 在初始消息添加"点击播放语音"提示（微信用户明确知道需要点击）
+            const audioTipDiv = document.createElement('div');
+            audioTipDiv.className = 'flex items-center justify-center mt-2 animate-fade-in';
+            audioTipDiv.innerHTML = `
+                <span class="text-primary text-sm audio-tip cursor-pointer" id="audioTriggerTip">
+                    <i class="fa fa-volume-up mr-1"></i>点击此处播放语音介绍
+                </span>
+            `;
+            chatContainer.appendChild(audioTipDiv);
+            
+            // 2. 绑定明确的点击触发事件（避免body事件被微信拦截）
+            const audioTriggerTip = document.getElementById('audioTriggerTip');
+            audioTriggerTip.addEventListener('click', function() {
+                if (isIntroAudioPlayed || isAudioPlaying) return;
+                
+                // 微信环境：先触发音频加载，再播放（解决加载延迟问题）
+                introAudio.load().then(() => {
+                    introAudio.play().then(() => {
+                        isAudioPlaying = true;
+                        isIntroAudioPlayed = true;
+                        // 隐藏提示
+                        audioTriggerTip.remove();
+                    }).catch(err => {
+                        console.error('intro音频播放失败:', err);
+                        // 微信环境播放失败提示（引导用户再次点击）
+                        audioTriggerTip.textContent = '播放失败，请再次点击';
+                    });
+                }).catch(err => {
+                    console.error('intro音频加载失败:', err);
+                    audioTriggerTip.textContent = '加载失败，请检查网络';
+                });
             });
-            // 移除点击监听（防止重复触发）
-            document.body.removeEventListener('click', playIntroAudioOnClick);
         }
 
         // 显示初始消息
@@ -174,9 +217,12 @@
             `;
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // 微信环境：添加音频触发提示（关键优化）
+            initAudioTrigger();
         }
 
-        // ---------------------- 核心2：右侧消息弹出后，立即停止intro音频 ----------------------
+        // ---------------------- 核心优化：右侧消息弹出后，确保音频切换正常 ----------------------
         // 显示用户消息（会话结束后不显示右侧消息栏）
         function showUserMessage(msg) {
             const msgDiv = document.createElement('div');
@@ -190,7 +236,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             // 右侧消息弹出后，立即停止intro音频（核心修改）
-            if (!introAudio.paused) {
+            if (introAudio && !introAudio.paused) {
                 stopAllAudios(); // 停止所有音频，确保无残留
                 isIntroAudioPlayed = true; // 标记intro音频已播放，不再触发
             }
@@ -230,7 +276,7 @@
             if (repeatAudioBtn) repeatAudioBtn.classList.remove('disabled-element');
         }
 
-        // 重复播放产品介绍音频（确保不与其他音频叠加）
+        // 微信环境优化3：重复播放产品音频（使用预初始化实例，避免动态创建失败）
         function playProductAudioAgain() {
             // 若当前有音频播放，直接返回（防止多段声音）
             if (isAudioPlaying) return;
@@ -242,22 +288,21 @@
             isAudioPlaying = true;
             disableAllInteractions();
             
-            // 3. 创建新的产品音频实例并播放
-            currentProductAudio = new Audio(productAudioUrl);
-            currentProductAudio.play().catch(err => {
+            // 3. 使用预初始化的产品音频实例播放（微信环境关键优化）
+            productAudio.currentTime = 0; // 重置播放位置
+            productAudio.play().catch(err => {
                 console.error('重复播放音频失败:', err);
-                // 播放失败：重置状态，恢复交互
+                // 播放失败：重置状态，恢复交互 + 提示用户
                 isAudioPlaying = false;
-                currentProductAudio = null;
                 enableAllInteractions();
+                alert('音频播放失败，请检查网络后重试');
             });
             
             // 4. 音频播放结束：重置状态，恢复交互
-            currentProductAudio.addEventListener('ended', () => {
+            productAudio.onended = function() {
                 isAudioPlaying = false;
-                currentProductAudio = null;
                 enableAllInteractions();
-            });
+            };
         }
 
         // 显示产品（含音频唯一播放逻辑 + 两个文字框同时弹出）
@@ -307,25 +352,24 @@
             // 5. 获取重复播放按钮元素（此时已添加到DOM）
             repeatAudioBtn = document.getElementById('repeat-audio-btn');
 
-            // 6. 播放产品介绍音频（存储实例，便于后续停止）
-            currentProductAudio = new Audio(productAudioUrl);
-            currentProductAudio.play().catch(err => {
+            // 6. 微信环境优化：使用预初始化的产品音频实例播放（避免动态创建失败）
+            productAudio.currentTime = 0; // 重置播放位置
+            productAudio.play().catch(err => {
                 console.error('产品音频播放失败:', err);
-                // 播放失败：重置状态，恢复交互
+                // 播放失败：重置状态，恢复交互 + 提示用户
                 isAudioPlaying = false;
-                currentProductAudio = null;
                 enableAllInteractions();
+                alert('产品介绍音频播放失败，请检查网络后重试');
                 // 直接触发会话结束
                 showEndNotice();
             });
 
             // 7. 音频播放结束：重置状态，恢复交互 + 触发会话结束
-            currentProductAudio.addEventListener('ended', () => {
+            productAudio.onended = function() {
                 isAudioPlaying = false;
-                currentProductAudio = null;
                 enableAllInteractions();
                 showEndNotice();
-            });
+            };
         }
 
         // 会话结束提示
@@ -412,11 +456,17 @@
             }
         });
 
-        // 页面加载初始化：显示初始消息 + 绑定intro音频点击播放事件
+        // 微信环境优化4：页面加载完成后初始化音频（避免未就绪导致播放失败）
         window.addEventListener('load', () => {
             showInitialMessage();
-            document.body.addEventListener('click', playIntroAudioOnClick);
+            // 提前加载产品音频元数据（不播放，仅初始化）
+            productAudio.load().catch(err => {
+                console.warn('产品音频预加载失败（不影响功能，播放时会重新加载）:', err);
+            });
         });
+
+        // 暴露重复播放函数到window（确保按钮onclick能调用）
+        window.playProductAudioAgain = playProductAudioAgain;
     </script>
 </body>
 </html>
