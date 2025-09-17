@@ -40,6 +40,12 @@
                 display: block;
                 margin: 0.75rem auto;
             }
+            /* 新增：禁用状态样式（视觉反馈） */
+            .input-disabled {
+                opacity: 0.5 !important;
+                cursor: not-allowed !important;
+                pointer-events: none !important; /* 阻止点击事件 */
+            }
         }
     </style>
 </head>
@@ -114,6 +120,24 @@
         const assistantAvatar = 'https://youke1.picui.cn/s1/2025/09/15/68c82b7d7f055.png';
         const headphoneImgSrc = 'https://youke1.picui.cn/s1/2025/09/16/68c8fd1f7e50b.jpg';
 
+        // 新增：禁用所有输入相关元素（会话结束后调用）
+        function disableAllInputs() {
+            // 1. 禁用输入模式切换按钮
+            textInputBtn.classList.add('input-disabled');
+            voiceInputBtn.classList.add('input-disabled');
+            
+            // 2. 禁用文字输入区（输入框+发送按钮）
+            messageInput.disabled = true; // 原生禁用属性（增强兼容性）
+            messageInput.classList.add('input-disabled');
+            sendBtn.classList.add('input-disabled');
+            
+            // 3. 禁用语音输入区（录音按钮）
+            voiceButton.classList.add('input-disabled');
+            
+            // 4. 禁用录音弹窗的停止按钮（防止弹窗未关闭时操作）
+            stopVoiceBtn.classList.add('input-disabled');
+        }
+
         // 显示初始消息（助手带头像）
         function showInitialMessage() {
             const msgDiv = document.createElement('div');
@@ -182,7 +206,7 @@
             }, 800);
         }
 
-        // 会话结束提示（后续输入仅显示此提示）
+        // 会话结束提示（后续输入仅显示此提示 + 新增禁用输入逻辑）
         function showEndNotice() {
             isSessionEnded = true;
             const endDiv = document.createElement('div');
@@ -194,9 +218,12 @@
             `;
             chatContainer.appendChild(endDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // 关键：会话结束后立即禁用所有输入元素
+            disableAllInputs();
         }
 
-        // 发送消息逻辑（会话结束后仅弹“会话结束”）
+        // 发送消息逻辑（会话结束后仅弹“会话结束”，且输入已禁用无需额外处理）
         function sendMessage() {
             if (isSessionEnded) {
                 showEndNotice();
@@ -212,8 +239,9 @@
             }
         }
 
-        // 切换输入模式（文字/语音）
+        // 切换输入模式（文字/语音）：会话结束后已禁用，点击无响应
         textInputBtn.addEventListener('click', () => {
+            if (isSessionEnded) return; // 新增：会话结束后阻止切换
             currentMode = 'text';
             textInputBtn.classList.replace('bg-neutral', 'bg-primary');
             textInputBtn.classList.replace('text-gray-600', 'text-white');
@@ -224,6 +252,7 @@
         });
 
         voiceInputBtn.addEventListener('click', () => {
+            if (isSessionEnded) return; // 新增：会话结束后阻止切换
             currentMode = 'voice';
             voiceInputBtn.classList.replace('bg-neutral', 'bg-primary');
             voiceInputBtn.classList.replace('text-gray-600', 'text-white');
@@ -235,22 +264,27 @@
 
         // 文本框自适应高度
         messageInput.addEventListener('input', function() {
+            if (isSessionEnded) return; // 新增：会话结束后阻止高度调整
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
 
-        // 语音输入逻辑
-        voiceButton.addEventListener('click', () => voiceModal.classList.remove('hidden'));
+        // 语音输入逻辑：会话结束后已禁用，点击无响应
+        voiceButton.addEventListener('click', () => {
+            if (!isSessionEnded) voiceModal.classList.remove('hidden');
+        });
         stopVoiceBtn.addEventListener('click', () => {
+            if (isSessionEnded) return; // 新增：会话结束后阻止关闭弹窗
             voiceModal.classList.add('hidden');
             setTimeout(() => {
                 showUserMessage('（🔊00:04"）');
             }, 500);
         });
 
-        // 发送按钮与回车事件
+        // 发送按钮与回车事件：会话结束后已禁用，点击/回车无响应
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', (e) => {
+            if (isSessionEnded) return; // 新增：会话结束后阻止回车发送
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
