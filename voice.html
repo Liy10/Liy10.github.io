@@ -121,23 +121,42 @@
         let repeatAudioBtn; // 重复播放按钮元素
         let isSessionEnded = false;
         let currentMode = 'voice'; // 输入模式：默认语音
-        let isIntroAudioPlayed = false; //  intro音频是否已播放（防止重复点击播放）
+        let isIntroAudioPlayed = false; // intro音频是否已播放（防止重复点击播放）
         let isAudioPlaying = false; // 当前是否有音频在播放（控制重复按钮禁用）
+        let currentProductAudio = null; // 存储产品音频实例（便于精准停止）
 
         // 资源链接
         const assistantAvatar = 'https://youke1.picui.cn/s1/2025/09/15/68c82b7d7f055.png';
         const headphoneImgSrc = 'https://youke1.picui.cn/s1/2025/09/16/68c8fd1f7e50b.jpg';
         const productAudioUrl = 'https://Liy10.github.io/last8158.MP3'; // 产品介绍音频
 
+        // ---------------------- 核心1：停止所有音频（确保不同时播放） ----------------------
+        function stopAllAudios() {
+            // 停止intro音频
+            if (!introAudio.paused) {
+                introAudio.pause();
+                introAudio.currentTime = 0;
+            }
+            // 停止产品音频（含重复播放的音频）
+            if (currentProductAudio && !currentProductAudio.paused) {
+                currentProductAudio.pause();
+                currentProductAudio.currentTime = 0;
+            }
+            // 重置音频播放状态
+            isAudioPlaying = false;
+        }
+
         // 页面点击播放intro音频（仅播放一次）
         function playIntroAudioOnClick() {
-            if (isIntroAudioPlayed) return;
+            if (isIntroAudioPlayed || isAudioPlaying) return; // 已有音频播放时不触发
             // 播放音频
-            introAudio.play().catch(err => {
+            introAudio.play().then(() => {
+                isAudioPlaying = true;
+                isIntroAudioPlayed = true;
+            }).catch(err => {
                 console.error('intro音频播放失败:', err);
             });
-            // 标记为已播放，移除点击监听
-            isIntroAudioPlayed = true;
+            // 移除点击监听（防止重复触发）
             document.body.removeEventListener('click', playIntroAudioOnClick);
         }
 
@@ -157,6 +176,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
+        // ---------------------- 核心2：右侧消息弹出后，立即停止intro音频 ----------------------
         // 显示用户消息（会话结束后不显示右侧消息栏）
         function showUserMessage(msg) {
             const msgDiv = document.createElement('div');
@@ -168,6 +188,13 @@
             `;
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // 右侧消息弹出后，立即停止intro音频（核心修改）
+            if (!introAudio.paused) {
+                stopAllAudios(); // 停止所有音频，确保无残留
+                isIntroAudioPlayed = true; // 标记intro音频已播放，不再触发
+            }
+
             if (!isSessionEnded) setTimeout(showProduct, 800);
         }
 
@@ -203,42 +230,46 @@
             if (repeatAudioBtn) repeatAudioBtn.classList.remove('disabled-element');
         }
 
-        // 重复播放产品介绍音频（音频播放中点击无效）
+        // 重复播放产品介绍音频（确保不与其他音频叠加）
         function playProductAudioAgain() {
             // 若当前有音频播放，直接返回（防止多段声音）
             if (isAudioPlaying) return;
             
-            // 暂停当前可能播放的音频
-            const allAudios = document.querySelectorAll('audio');
-            allAudios.forEach(audio => audio.pause());
+            // 1. 先停止所有音频（核心：避免与intro/旧产品音频叠加）
+            stopAllAudios();
             
-            // 标记为音频播放中，禁用按钮
+            // 2. 标记为音频播放中，禁用按钮
             isAudioPlaying = true;
             disableAllInteractions();
             
-            // 创建新的音频实例并播放
-            const againAudio = new Audio(productAudioUrl);
-            againAudio.play().catch(err => {
+            // 3. 创建新的产品音频实例并播放
+            currentProductAudio = new Audio(productAudioUrl);
+            currentProductAudio.play().catch(err => {
                 console.error('重复播放音频失败:', err);
                 // 播放失败：重置状态，恢复交互
                 isAudioPlaying = false;
+                currentProductAudio = null;
                 enableAllInteractions();
             });
             
-            // 音频播放结束：重置状态，恢复交互
-            againAudio.addEventListener('ended', () => {
+            // 4. 音频播放结束：重置状态，恢复交互
+            currentProductAudio.addEventListener('ended', () => {
                 isAudioPlaying = false;
+                currentProductAudio = null;
                 enableAllInteractions();
             });
         }
 
-        // 显示产品（含音频播放逻辑 + 两个文字框同时弹出）
+        // 显示产品（含音频唯一播放逻辑 + 两个文字框同时弹出）
         function showProduct() {
-            // 1. 标记为音频播放中，禁用所有交互
+            // 1. 先停止所有音频（核心：避免与intro音频叠加）
+            stopAllAudios();
+            
+            // 2. 标记为音频播放中，禁用所有交互
             isAudioPlaying = true;
             disableAllInteractions();
 
-            // 2. 创建产品推荐消息（含“倾听Lolli...”）
+            // 3. 创建产品推荐消息（含“倾听Lolli...”）
             const productDiv = document.createElement('div');
             productDiv.className = 'flex items-start space-x-3 animate-fade-in';
             productDiv.innerHTML = `
@@ -259,7 +290,7 @@
             `;
             chatContainer.appendChild(productDiv);
 
-            // 3. 同时创建“以上就是Jamie...”消息（无延迟，实现同时弹出）
+            // 4. 同时创建“以上就是Jamie...”消息（无延迟，实现同时弹出）
             const finalTipDiv = document.createElement('div');
             finalTipDiv.className = 'flex items-start space-x-3 animate-fade-in';
             finalTipDiv.innerHTML = `
@@ -273,23 +304,25 @@
             chatContainer.appendChild(finalTipDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // 4. 获取重复播放按钮元素（此时已添加到DOM）
+            // 5. 获取重复播放按钮元素（此时已添加到DOM）
             repeatAudioBtn = document.getElementById('repeat-audio-btn');
 
-            // 5. 播放产品介绍音频
-            const productAudio = new Audio(productAudioUrl);
-            productAudio.play().catch(err => {
+            // 6. 播放产品介绍音频（存储实例，便于后续停止）
+            currentProductAudio = new Audio(productAudioUrl);
+            currentProductAudio.play().catch(err => {
                 console.error('产品音频播放失败:', err);
                 // 播放失败：重置状态，恢复交互
                 isAudioPlaying = false;
+                currentProductAudio = null;
                 enableAllInteractions();
                 // 直接触发会话结束
                 showEndNotice();
             });
 
-            // 6. 音频播放结束：重置状态，恢复交互 + 触发会话结束
-            productAudio.addEventListener('ended', () => {
+            // 7. 音频播放结束：重置状态，恢复交互 + 触发会话结束
+            currentProductAudio.addEventListener('ended', () => {
                 isAudioPlaying = false;
+                currentProductAudio = null;
                 enableAllInteractions();
                 showEndNotice();
             });
