@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购物助手 Jamie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        neutral: '#F5F7FA',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .scrollbar-hide {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .product-img-center {
+                display: block;
+                margin: 0.75rem auto;
+            }
+            .input-disabled {
+                opacity: 0.5 !important;
+                cursor: not-allowed !important;
+                pointer-events: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-neutral min-h-screen flex flex-col">
+    <!-- 顶部栏 -->
+    <div class="header bg-primary text-white py-4 px-6 text-center font-bold text-xl shadow-md">
+        购物助手 Jamie
+    </div>
+
+    <!-- 聊天容器 -->
+    <div class="chat-container flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4" id="chat-container"></div>
+
+    <!-- 输入交互区（仅保留文字/语音按钮栏外观，删除所有实际交互元素） -->
+    <div class="bg-white rounded-2xl shadow-md p-4 mb-6 mx-4">
+        <div class="flex items-center space-x-2 mb-3">
+            <button class="flex-1 py-2 rounded-lg bg-neutral text-gray-600 flex items-center justify-center space-x-2 input-disabled">
+                <i class="fa fa-keyboard-o"></i>
+                <span>文字</span>
+            </button>
+            <button class="flex-1 py-2 rounded-lg bg-neutral text-gray-600 flex items-center justify-center space-x-2 input-disabled">
+                <i class="fa fa-microphone"></i>
+                <span>语音</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const headphoneImgSrc = 'https://youke1.picui.cn/s1/2025/09/16/68c8fd1f7e50b.jpg';
+
+        // 初始欢迎消息
+        function showInitialMessage() {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex items-start animate-fade-in';
+            msgDiv.innerHTML = `
+                <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 rounded-tl-none shadow-sm text-base">
+                    您好，我是您的购物助手Jamie，已经收到您的要求，
+                    <button id="show-product-btn" class="text-primary underline focus:outline-none">
+                        点击查看推荐产品
+                    </button>
+                </div>
+            `;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // 绑定点击事件（只允许使用一次）
+            const showProductBtn = document.getElementById('show-product-btn');
+            showProductBtn.addEventListener('click', () => {
+                showProduct();
+                showProductBtn.disabled = true;
+                showProductBtn.classList.add("input-disabled");
+            }, { once: true });
+        }
+
+        // 显示产品
+        function showProduct() {
+            const productDiv = document.createElement('div');
+            productDiv.className = 'flex items-start animate-fade-in';
+            productDiv.innerHTML = `
+                <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 rounded-tl-none shadow-sm">
+                    倾听Lolli 是2025年性价比最高的耳机选择，以下是它的推荐理由：
+                    <img src="${headphoneImgSrc}" class="product-img-center w-56 rounded-lg shadow-sm" alt="倾听Lolli耳机">
+                    <p class="mt-2 text-base"><strong>配置：</strong>自适应降噪2.0，13mm强磁单元，IP54防水</p>
+                    <p class="mt-1 text-base"><strong>电商参考价：</strong>179元</p>
+                    <p class="mt-1 text-base"><strong>特色：</strong>34小时续航，月销量过十万件，好评率95%以上</p>
+                </div>
+            `;
+            chatContainer.appendChild(productDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            setTimeout(() => {
+                const finalTipDiv = document.createElement('div');
+                finalTipDiv.className = 'flex items-start animate-fade-in';
+                finalTipDiv.innerHTML = `
+                    <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 rounded-tl-none shadow-sm">
+                        以上就是为您推荐的耳机，希望您满意。
+                    </div>
+                `;
+                chatContainer.appendChild(finalTipDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                setTimeout(showEndNotice, 500);
+            }, 800);
+        }
+
+        // 会话结束提示
+        function showEndNotice() {
+            const endDiv = document.createElement('div');
+            endDiv.className = 'flex items-center justify-center space-x-3 animate-fade-in';
+            endDiv.innerHTML = `
+                <div class="px-4 py-2 rounded-xl bg-gray-200 text-gray-600 text-sm">
+                    会话结束
+                </div>
+            `;
+            chatContainer.appendChild(endDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 页面加载时运行
+        window.addEventListener('load', () => {
+            showInitialMessage();
+        });
+    </script>
+</body>
+</html>
