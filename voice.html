@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>你的专属购物助手 Jamie</title>
+    <title>外卖搜索中···</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
@@ -39,25 +39,15 @@
             .product-img-center {
                 display: block;
                 margin: 0.75rem auto;
-            }
-            .disabled-element {
-                opacity: 0.5 !important;
-                cursor: not-allowed !important;
-                pointer-events: none !important;
+                max-width: 90%;
+                border-radius: 8px;
             }
         }
     </style>
 </head>
 <body class="bg-neutral min-h-screen flex flex-col">
-    <!-- 顶部栏 -->
-    <div class="header bg-primary text-white py-4 px-6 text-center font-bold text-xl shadow-md">
-        购物助手 Jamie
-    </div>
-
-    <!-- 页面点击播放的音频（隐藏）- 移除autoplay，改为点击触发 -->
-    <audio id="introAudio" src="https://Liy10.github.io/introduction.MP3" preload="auto" hidden>
-        您的浏览器不支持音频播放
-    </audio>
+    <!-- 顶部栏（仅保留背景，无文字） -->
+    <div class="header bg-primary py-4 shadow-md"></div>
 
     <!-- 聊天容器 -->
     <div class="chat-container flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4" id="chat-container"></div>
@@ -65,25 +55,27 @@
     <!-- 输入交互区 -->
     <div class="bg-white rounded-2xl shadow-md p-4 mb-6 mx-4">
         <div class="flex items-center space-x-2 mb-3">
-            <button id="text-input-btn" class="flex-1 py-2 rounded-lg bg-neutral text-gray-600 flex items-center justify-center space-x-2 transition-all">
+            <!-- 文字输入按钮（禁用） -->
+            <button id="text-input-btn" class="flex-1 py-2 rounded-lg bg-gray-300 text-gray-500 flex items-center justify-center space-x-2 transition-all cursor-not-allowed" disabled>
                 <i class="fa fa-keyboard-o"></i>
                 <span>文字</span>
             </button>
+            <!-- 语音输入按钮（默认激活） -->
             <button id="voice-input-btn" class="flex-1 py-2 rounded-lg bg-primary text-white flex items-center justify-center space-x-2 transition-all">
                 <i class="fa fa-microphone"></i>
                 <span>语音</span>
             </button>
         </div>
         
-        <!-- 文字输入 (默认隐藏) -->
+        <!-- 文字输入容器（隐藏且禁用） -->
         <div id="text-input-container" class="hidden flex items-center space-x-2">
-            <textarea id="message-input" class="flex-1 border-none outline-none resize-none h-12 text-base placeholder-gray-400" placeholder="请输入您的需求..."></textarea>
-            <button id="send-btn" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors">
+            <textarea id="message-input" class="flex-1 border-none outline-none resize-none h-12 text-base placeholder-gray-400" placeholder="请输入您的需求..." disabled></textarea>
+            <button id="send-btn" class="w-10 h-10 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center cursor-not-allowed" disabled>
                 <i class="fa fa-paper-plane"></i>
             </button>
         </div>
         
-        <!-- 语音输入 (默认显示) -->
+        <!-- 语音输入容器（默认显示） -->
         <div id="voice-input-container" class="py-6 flex flex-col items-center justify-center">
             <div id="voice-button" class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 cursor-pointer hover:bg-primary/20 transition-all">
                 <i class="fa fa-microphone text-primary text-2xl"></i>
@@ -98,7 +90,7 @@
             <div class="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center animate-pulse">
                 <i class="fa fa-microphone text-primary text-2xl"></i>
             </div>
-            <h3 class="text-lg font-bold mb-1">正在录音</h3>
+            <h3 class="text-lg font-bold mb-1">正在倾听</h3>
             <p class="text-gray-500 text-sm mb-4">请说出您的需求</p>
             <button id="stop-voice-btn" class="bg-primary text-white px-5 py-2 rounded-full text-sm hover:bg-primary/90 transition-colors">
                 完成录音
@@ -108,76 +100,30 @@
 
     <script>
         const chatContainer = document.getElementById('chat-container');
-        const textInputBtn = document.getElementById('text-input-btn');
-        const voiceInputBtn = document.getElementById('voice-input-btn');
         const textInputContainer = document.getElementById('text-input-container');
         const voiceInputContainer = document.getElementById('voice-input-container');
-        const messageInput = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
         const voiceButton = document.getElementById('voice-button');
         const voiceModal = document.getElementById('voice-modal');
         const stopVoiceBtn = document.getElementById('stop-voice-btn');
-        const introAudio = document.getElementById('introAudio');
-        let repeatAudioBtn; // 重复播放按钮元素
         let isSessionEnded = false;
-        let currentMode = 'voice'; // 输入模式：默认语音
-        let isIntroAudioPlayed = false; // intro音频是否已播放（防止重复点击播放）
-        let isAudioPlaying = false; // 当前是否有音频在播放（控制重复按钮禁用）
-        let currentProductAudio = null; // 存储产品音频实例（便于精准停止）
 
         // 资源链接
-        const assistantAvatar = 'https://youke1.picui.cn/s1/2025/09/15/68c82b7d7f055.png';
-        const headphoneImgSrc = 'https://youke1.picui.cn/s1/2025/09/16/68c8fd1f7e50b.jpg';
-        const productAudioUrl = 'https://Liy10.github.io/last8158.MP3'; // 产品介绍音频
+        const cupcakeImgSrc = 'https://tc-new.z.wiki/autoupload/f/FEs5Vr00EyUhTeaQUgXQTJftkq2CPLzrZe2i6al7theyl5f0KlZfm6UsKj-HyTuv/20251004/rK82/1900X1068/b98c19ead075f1ce451a0221fd89ddea.png/webp';
 
-        // ---------------------- 核心1：停止所有音频（确保不同时播放） ----------------------
-        function stopAllAudios() {
-            // 停止intro音频
-            if (!introAudio.paused) {
-                introAudio.pause();
-                introAudio.currentTime = 0;
-            }
-            // 停止产品音频（含重复播放的音频）
-            if (currentProductAudio && !currentProductAudio.paused) {
-                currentProductAudio.pause();
-                currentProductAudio.currentTime = 0;
-            }
-            // 重置音频播放状态
-            isAudioPlaying = false;
-        }
-
-        // 页面点击播放intro音频（仅播放一次）
-        function playIntroAudioOnClick() {
-            if (isIntroAudioPlayed || isAudioPlaying) return; // 已有音频播放时不触发
-            // 播放音频
-            introAudio.play().then(() => {
-                isAudioPlaying = true;
-                isIntroAudioPlayed = true;
-            }).catch(err => {
-                console.error('intro音频播放失败:', err);
-            });
-            // 移除点击监听（防止重复触发）
-            document.body.removeEventListener('click', playIntroAudioOnClick);
-        }
-
-        // 显示初始消息
+        // 显示初始消息（无头像，左对齐）
         function showInitialMessage() {
             const msgDiv = document.createElement('div');
-            msgDiv.className = 'flex items-start space-x-3 animate-fade-in';
+            msgDiv.className = 'flex items-start animate-fade-in';
             msgDiv.innerHTML = `
-                <div class="w-10 h-10 rounded-full flex-shrink-0 bg-primary">
-                    <img src="${assistantAvatar}" alt="Jamie头像" class="w-full h-full object-cover rounded-full">
-                </div>
-                <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 rounded-tl-none shadow-sm">
-                    你好，我是您的购物助手Jamie，请告诉我您的需求，我会为您推荐适合的产品。
+                <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
+                    很高兴为您服务，请问有需要帮您推荐的餐品吗？
                 </div>
             `;
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // ---------------------- 核心2：右侧消息弹出后，立即停止intro音频 ----------------------
-        // 显示用户消息（会话结束后不显示右侧消息栏）
+        // 显示用户消息（右侧无头像）
         function showUserMessage(msg) {
             const msgDiv = document.createElement('div');
             msgDiv.className = 'flex items-start justify-end animate-fade-in';
@@ -188,151 +134,55 @@
             `;
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
-
-            // 右侧消息弹出后，立即停止intro音频（核心修改）
-            if (!introAudio.paused) {
-                stopAllAudios(); // 停止所有音频，确保无残留
-                isIntroAudioPlayed = true; // 标记intro音频已播放，不再触发
-            }
-
-            if (!isSessionEnded) setTimeout(showProduct, 800);
+            if (!isSessionEnded) setTimeout(showProductRecommend, 800);
         }
 
-        // 禁用所有交互元素
-        function disableAllInteractions() {
-            // 禁用输入切换按钮
-            textInputBtn.classList.add('disabled-element');
-            voiceInputBtn.classList.add('disabled-element');
-            // 禁用文字输入相关
-            messageInput.disabled = true;
-            messageInput.classList.add('bg-gray-100', 'disabled-element');
-            sendBtn.classList.add('disabled-element');
-            // 禁用语音输入相关
-            voiceButton.classList.add('disabled-element');
-            stopVoiceBtn.classList.add('disabled-element');
-            // 禁用重复播放按钮
-            if (repeatAudioBtn) repeatAudioBtn.classList.add('disabled-element');
-        }
-
-        // 恢复所有交互元素
-        function enableAllInteractions() {
-            // 恢复输入切换按钮
-            textInputBtn.classList.remove('disabled-element');
-            voiceInputBtn.classList.remove('disabled-element');
-            // 恢复文字输入相关
-            messageInput.disabled = false;
-            messageInput.classList.remove('bg-gray-100', 'disabled-element');
-            sendBtn.classList.remove('disabled-element');
-            // 恢复语音输入相关
-            voiceButton.classList.remove('disabled-element');
-            stopVoiceBtn.classList.remove('disabled-element');
-            // 恢复重复播放按钮
-            if (repeatAudioBtn) repeatAudioBtn.classList.remove('disabled-element');
-        }
-
-        // 重复播放产品介绍音频（确保不与其他音频叠加）
-        function playProductAudioAgain() {
-            // 若当前有音频播放，直接返回（防止多段声音）
-            if (isAudioPlaying) return;
-            
-            // 1. 先停止所有音频（核心：避免与intro/旧产品音频叠加）
-            stopAllAudios();
-            
-            // 2. 标记为音频播放中，禁用按钮
-            isAudioPlaying = true;
-            disableAllInteractions();
-            
-            // 3. 创建新的产品音频实例并播放
-            currentProductAudio = new Audio(productAudioUrl);
-            currentProductAudio.play().catch(err => {
-                console.error('重复播放音频失败:', err);
-                // 播放失败：重置状态，恢复交互
-                isAudioPlaying = false;
-                currentProductAudio = null;
-                enableAllInteractions();
-            });
-            
-            // 4. 音频播放结束：重置状态，恢复交互
-            currentProductAudio.addEventListener('ended', () => {
-                isAudioPlaying = false;
-                currentProductAudio = null;
-                enableAllInteractions();
-            });
-        }
-
-        // 显示产品（含音频唯一播放逻辑 + 两个文字框同时弹出）
-        function showProduct() {
-            // 1. 先停止所有音频（核心：避免与intro音频叠加）
-            stopAllAudios();
-            
-            // 2. 标记为音频播放中，禁用所有交互
-            isAudioPlaying = true;
-            disableAllInteractions();
-
-            // 3. 创建产品推荐消息（含“倾听Lolli...”）
-            const productDiv = document.createElement('div');
-            productDiv.className = 'flex items-start space-x-3 animate-fade-in';
-            productDiv.innerHTML = `
-                <div class="w-10 h-10 rounded-full flex-shrink-0 bg-primary">
-                    <img src="${assistantAvatar}" alt="Jamie头像" class="w-full h-full object-cover rounded-full">
-                </div>
-                <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 rounded-tl-none shadow-sm">
-                    倾听Lolli 是2025年性价比最高的耳机选择，以下是它的推荐理由：
-                    <img src="${headphoneImgSrc}" class="product-img-center w-56 rounded-lg shadow-sm" alt="倾听Lolli耳机">
-                    <p class="mt-2 text-base"><strong>配置：</strong>自适应降噪2.0，13mm强磁单元，IP54防水</p>
-                    <p class="mt-1 text-base"><strong>电商参考价：</strong>179元</p>
-                    <p class="mt-1 text-base"><strong>特色：</strong>34小时续航，月销量过十万件，好评率95%以上</p>
-                    <!-- 重复播放按钮：添加id便于控制状态 -->
-                    <button id="repeat-audio-btn" onclick="playProductAudioAgain()" class="mt-2 px-3 py-1 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
-                        <i class="fa fa-repeat mr-1"></i>重复播放介绍
-                    </button>
+        // 显示产品推荐（分三步：推荐文字 → 图片 → 结束提示）
+        function showProductRecommend() {
+            // 第一步：显示推荐文字
+            const recommendTextDiv = document.createElement('div');
+            recommendTextDiv.className = 'flex items-start animate-fade-in';
+            recommendTextDiv.innerHTML = `
+                <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
+                    好的，为您推荐下面这两款蛋糕，二者月销量都居于前列，除外观外，热量、口味、原材料、价格等都相同。
                 </div>
             `;
-            chatContainer.appendChild(productDiv);
-
-            // 4. 同时创建“以上就是Jamie...”消息（无延迟，实现同时弹出）
-            const finalTipDiv = document.createElement('div');
-            finalTipDiv.className = 'flex items-start space-x-3 animate-fade-in';
-            finalTipDiv.innerHTML = `
-                <div class="w-10 h-10 rounded-full flex-shrink-0 bg-primary">
-                    <img src="${assistantAvatar}" alt="Jamie头像" class="w-full h-full object-cover rounded-full">
-                </div>
-                <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 rounded-tl-none shadow-sm">
-                    以上就是Jamie为您推荐的耳机，希望您满意。
-                </div>
-            `;
-            chatContainer.appendChild(finalTipDiv);
+            chatContainer.appendChild(recommendTextDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // 5. 获取重复播放按钮元素（此时已添加到DOM）
-            repeatAudioBtn = document.getElementById('repeat-audio-btn');
+            // 第二步：延迟显示产品图片
+            setTimeout(() => {
+                const productImgDiv = document.createElement('div');
+                productImgDiv.className = 'flex items-start animate-fade-in';
+                productImgDiv.innerHTML = `
+                    <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
+                        <img src="${cupcakeImgSrc}" alt="推荐的纸杯蛋糕" class="product-img-center">
+                    </div>
+                `;
+                chatContainer.appendChild(productImgDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // 6. 播放产品介绍音频（存储实例，便于后续停止）
-            currentProductAudio = new Audio(productAudioUrl);
-            currentProductAudio.play().catch(err => {
-                console.error('产品音频播放失败:', err);
-                // 播放失败：重置状态，恢复交互
-                isAudioPlaying = false;
-                currentProductAudio = null;
-                enableAllInteractions();
-                // 直接触发会话结束
-                showEndNotice();
-            });
-
-            // 7. 音频播放结束：重置状态，恢复交互 + 触发会话结束
-            currentProductAudio.addEventListener('ended', () => {
-                isAudioPlaying = false;
-                currentProductAudio = null;
-                enableAllInteractions();
-                showEndNotice();
-            });
+                // 第三步：延迟显示结束提示语
+                setTimeout(() => {
+                    const finalTipDiv = document.createElement('div');
+                    finalTipDiv.className = 'flex items-start animate-fade-in';
+                    finalTipDiv.innerHTML = `
+                        <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
+                            以上就是为您推荐的纸杯蛋糕，希望您满意。
+                        </div>
+                    `;
+                    chatContainer.appendChild(finalTipDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    setTimeout(showEndNotice, 500); // 触发会话结束
+                }, 800);
+            }, 800);
         }
 
         // 会话结束提示
         function showEndNotice() {
             isSessionEnded = true;
             const endDiv = document.createElement('div');
-            endDiv.className = 'flex items-center justify-center space-x-3 animate-fade-in';
+            endDiv.className = 'flex items-center justify-center animate-fade-in';
             endDiv.innerHTML = `
                 <div class="px-4 py-2 rounded-xl bg-gray-200 text-gray-600 text-sm">
                     会话结束
@@ -342,56 +192,8 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // 发送消息逻辑（会话结束后仅显示会话结束提示，不显示用户消息）
-        function sendMessage() {
-            if (isSessionEnded) {
-                showEndNotice(); // 仅显示会话结束提示
-                return;
-            }
-
-            const msg = messageInput.value.trim();
-            if (msg) {
-                showUserMessage(msg);
-                messageInput.value = '';
-                messageInput.style.height = 'auto';
-            } else if (currentMode === 'voice') {
-                showUserMessage('（🔊00:04"）');
-            }
-        }
-
-        // 切换输入模式（文字/语音）
-        textInputBtn.addEventListener('click', () => {
-            if (isSessionEnded || isAudioPlaying) return; // 会话结束/音频播放时不允许切换
-            currentMode = 'text';
-            textInputBtn.classList.replace('bg-neutral', 'bg-primary');
-            textInputBtn.classList.replace('text-gray-600', 'text-white');
-            voiceInputBtn.classList.replace('bg-primary', 'bg-neutral');
-            voiceInputBtn.classList.replace('text-white', 'text-gray-600');
-            textInputContainer.classList.remove('hidden');
-            voiceInputContainer.classList.add('hidden');
-        });
-
-        voiceInputBtn.addEventListener('click', () => {
-            if (isSessionEnded || isAudioPlaying) return; // 会话结束/音频播放时不允许切换
-            currentMode = 'voice';
-            voiceInputBtn.classList.replace('bg-neutral', 'bg-primary');
-            voiceInputBtn.classList.replace('text-gray-600', 'text-white');
-            textInputBtn.classList.replace('bg-primary', 'bg-neutral');
-            textInputBtn.classList.replace('text-white', 'text-gray-600');
-            voiceInputContainer.classList.remove('hidden');
-            textInputContainer.classList.add('hidden');
-        });
-
-        // 文本框自适应高度
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-        });
-
-        // 语音输入逻辑（会话结束/音频播放时不允许录音）
-        voiceButton.addEventListener('click', () => {
-            if (!isSessionEnded && !isAudioPlaying) voiceModal.classList.remove('hidden');
-        });
+        // 语音输入逻辑
+        voiceButton.addEventListener('click', () => voiceModal.classList.remove('hidden'));
         stopVoiceBtn.addEventListener('click', () => {
             voiceModal.classList.add('hidden');
             setTimeout(() => {
@@ -403,20 +205,8 @@
             }, 500);
         });
 
-        // 发送按钮与回车事件
-        sendBtn.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-
-        // 页面加载初始化：显示初始消息 + 绑定intro音频点击播放事件
-        window.addEventListener('load', () => {
-            showInitialMessage();
-            document.body.addEventListener('click', playIntroAudioOnClick);
-        });
+        // 页面加载时显示初始消息
+        window.addEventListener('load', showInitialMessage);
     </script>
 </body>
 </html>
