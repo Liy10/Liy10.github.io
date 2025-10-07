@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="always"> <!-- 微信环境权限申请必要配置 -->
     <title>购物平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -41,6 +42,30 @@
                 margin: 0.75rem auto;
                 max-width: 90%;
                 border-radius: 8px;
+                cursor: pointer; /* 提示图片可点击 */
+                transition: all 0.2s ease;
+            }
+            .product-img-center:hover {
+                transform: scale(1.02); /*  hover时轻微放大，增强交互感 */
+            }
+            .wechat-tip {
+                color: #165DFF;
+                font-weight: 500;
+            }
+            /* 图片预览模态框动画 */
+            .animate-img-modal {
+                animation: imgModalFade 0.3s ease-out forwards;
+            }
+            @keyframes imgModalFade {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            .animate-img-zoom {
+                animation: imgZoom 0.3s ease-out forwards;
+            }
+            @keyframes imgZoom {
+                from { opacity: 0; transform: scale(0.9); }
+                to { opacity: 1; transform: scale(1); }
             }
         }
     </style>
@@ -75,25 +100,38 @@
             </button>
         </div>
         
-        <!-- 语音输入容器（默认显示） -->
+        <!-- 语音输入容器（默认显示，增加微信提示） -->
         <div id="voice-input-container" class="py-6 flex flex-col items-center justify-center">
             <div id="voice-button" class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 cursor-pointer hover:bg-primary/20 transition-all">
                 <i class="fa fa-microphone text-primary text-2xl"></i>
             </div>
-            <p class="text-gray-600 text-sm">点击说话</p>
+            <p class="text-gray-600 text-sm mb-1">点击说话（请允许麦克风权限）</p>
         </div>
     </div>
 
-    <!-- 语音录音弹窗 -->
+    <!-- 语音录音弹窗（优化微信环境提示） -->
     <div id="voice-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
         <div class="bg-white rounded-2xl p-6 max-w-xs w-full text-center">
             <div class="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center animate-pulse">
                 <i class="fa fa-microphone text-primary text-2xl"></i>
             </div>
             <h3 class="text-lg font-bold mb-1">正在倾听</h3>
-            <p class="text-gray-500 text-sm mb-4">请说出您的需求（如“我要卫衣”“搜索彩椒”）</p>
+            <p class="text-gray-500 text-sm mb-2">请清晰说出产品名称（如“我要卫衣”）</p>
+            <p class="text-xs text-gray-500 mb-4"><span class="wechat-tip">微信用户：</span>若未弹出权限请求，请检查微信设置</p>
             <button id="stop-voice-btn" class="bg-primary text-white px-5 py-2 rounded-full text-sm hover:bg-primary/90 transition-colors">
                 完成录音
+            </button>
+        </div>
+    </div>
+
+    <!-- 新增：图片预览模态框（点击图片放大查看） -->
+    <div id="img-preview-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden animate-img-modal">
+        <div class="relative max-w-[90%] max-h-[90vh]">
+            <!-- 放大后的图片 -->
+            <img id="preview-img" src="" alt="产品大图预览" class="max-w-full max-h-[90vh] rounded-lg animate-img-zoom">
+            <!-- 关闭按钮（可选，增强体验） -->
+            <button id="close-img-btn" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition-colors">
+                <i class="fa fa-times"></i>
             </button>
         </div>
     </div>
@@ -107,6 +145,10 @@
         const stopVoiceBtn = document.getElementById('stop-voice-btn');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
+        // 新增：图片预览相关元素
+        const imgPreviewModal = document.getElementById('img-preview-modal');
+        const previewImg = document.getElementById('preview-img');
+        const closeImgBtn = document.getElementById('close-img-btn');
         
         // 核心控制变量
         let isSessionEnded = false;
@@ -114,6 +156,7 @@
         let shownProducts = []; // 已展示的产品列表
         let lastUserInput = ''; // 存储真实语音识别结果
         let speechRecognition; // 语音识别实例（Web Speech API）
+        const productKeywords = ['卫衣', '彩椒', '计算器', '卷纸', '咖啡机']; // 用于模糊匹配的关键词库
 
         // 产品资源配置（不变）
         const productConfig = {
@@ -139,38 +182,53 @@
             }
         };
 
-        // 初始化语音识别（处理浏览器兼容性）
+        // 检测是否为微信环境
+        function isWechatEnv() {
+            const ua = window.navigator.userAgent.toLowerCase();
+            return ua.includes('micromessenger');
+        }
+
+        // 初始化语音识别（适配微信环境，优化参数）
         function initSpeechRecognition() {
-            // Web Speech API兼容性处理：Chrome/Safari用webkit前缀，Firefox暂不支持
+            // Web Speech API兼容性处理：微信内置浏览器基于Chrome内核，支持webkit前缀
             window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!window.SpeechRecognition) {
-                // 浏览器不支持语音识别时提示
-                alert('您的浏览器不支持语音识别功能，请使用Chrome、Edge等现代浏览器');
+                const tipMsg = isWechatEnv() 
+                    ? '您的微信浏览器暂不支持语音识别，请升级微信或使用Chrome浏览器'
+                    : '您的浏览器不支持语音识别功能，请使用Chrome、Edge等现代浏览器';
+                alert(tipMsg);
                 return null;
             }
 
-            // 创建语音识别实例
+            // 创建语音识别实例（优化微信环境参数）
             const recognition = new window.SpeechRecognition();
-            recognition.lang = 'zh-CN'; // 设置识别语言为中文
-            recognition.interimResults = false; // 不返回临时结果（只返回最终结果）
-            recognition.maxAlternatives = 1; // 只返回1个最可能的结果
+            recognition.lang = 'zh-CN'; // 中文识别（微信支持良好）
+            recognition.interimResults = false; // 不返回临时结果，确保结果准确性
+            recognition.maxAlternatives = 1; // 只返回1个最可能结果
+            recognition.continuous = false; // 单次录音识别（微信环境避免持续占用麦克风）
+            // 关键：首次权限通过后，浏览器会记忆，后续调用无需重复申请
             return recognition;
         }
 
-        // 显示初始欢迎语（更新为真实语音引导）
+        // 显示初始欢迎语（增加微信专属引导）
         function showInitialMessage() {
+            const wechatTip = isWechatEnv() 
+                ? '<p class="mt-2 text-xs text-gray-500 wechat-tip">微信用户：首次使用请允许麦克风权限，权限请求在微信顶部弹出（一次允许后可持续使用至会话结束）</p>'
+                : '<p class="mt-2 text-xs text-gray-500"></p>';
+            
             const msgDiv = document.createElement('div');
             msgDiv.className = 'flex items-start animate-fade-in';
             msgDiv.innerHTML = `
                 <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
                     很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、咖啡机 这五类产品，请点击语音按钮说出对应产品名称（如“我要卫衣”）浏览详情（请最后再搜索咖啡机）。
+                    ${wechatTip}
                 </div>
             `;
             chatContainer.appendChild(msgDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // 显示用户语音消息（标注真实语音标识）
+        // 显示用户语音消息（不变）
         function showUserVoiceMessage(voiceContent) {
             const msgDiv = document.createElement('div');
             msgDiv.className = 'flex items-start justify-end animate-fade-in';
@@ -184,7 +242,53 @@
             if (!isSessionEnded) setTimeout(showProductRecommend, 800);
         }
 
-        // 核心：产品推荐逻辑（不变，仅输入来源改为真实语音）
+        // 优化关键词匹配：支持口语化表达（如“买卫衣”“卫衣在哪”）
+        function matchProductKeyword(inputText) {
+            if (!inputText) return '';
+            // 预处理：转为小写、去除空格和常见语气词（提升容错率）
+            const processedText = inputText.toLowerCase()
+                .replace(/\s+/g, '')
+                .replace(/(我要|想买|搜索|找|要|看)/g, '');
+            
+            // 匹配关键词库
+            for (const keyword of productKeywords) {
+                if (processedText.includes(keyword.toLowerCase())) {
+                    return keyword;
+                }
+            }
+            return ''; // 未匹配到关键词
+        }
+
+        // 新增：图片放大预览功能
+        function initImgPreview() {
+            // 点击图片显示放大模态框
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('product-img-center')) {
+                    const imgSrc = e.target.src;
+                    previewImg.src = imgSrc;
+                    imgPreviewModal.classList.remove('hidden');
+                    // 禁止页面滚动
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+
+            // 点击关闭按钮/模态框背景关闭预览
+            function closeImgPreview() {
+                imgPreviewModal.classList.add('hidden');
+                previewImg.src = '';
+                // 恢复页面滚动
+                document.body.style.overflow = 'auto';
+            }
+            closeImgBtn.addEventListener('click', closeImgPreview);
+            imgPreviewModal.addEventListener('click', (e) => {
+                // 点击背景关闭，点击图片本身不关闭
+                if (e.target === imgPreviewModal) {
+                    closeImgPreview();
+                }
+            });
+        }
+
+        // 核心：产品推荐逻辑（优化关键词匹配，适配微信提示）
         function showProductRecommend() {
             let currentProduct = '';
             let recommendText = '';
@@ -192,28 +296,24 @@
             let isInvalid = false;
             let invalidType = 0; // 1=未含指定词，2=未按顺序搜咖啡机
 
-            // 判断语音中的指定词
-            if (lastUserInput.includes('卫衣')) {
-                currentProduct = '卫衣';
-            } else if (lastUserInput.includes('彩椒')) {
-                currentProduct = '彩椒';
-            } else if (lastUserInput.includes('计算器')) {
-                currentProduct = '计算器';
-            } else if (lastUserInput.includes('纸')) {
-                currentProduct = '卷纸';
-            } else if (lastUserInput.includes('咖啡机')) {
-                currentProduct = '咖啡机';
-                const allRequiredShown = requiredProducts.every(type => shownProducts.includes(type));
-                if (!allRequiredShown) {
-                    isInvalid = true;
-                    invalidType = 2;
+            // 优化：使用模糊匹配识别产品（支持口语化表达）
+            const matchedKeyword = matchProductKeyword(lastUserInput);
+            if (matchedKeyword) {
+                currentProduct = matchedKeyword;
+                // 校验咖啡机顺序
+                if (currentProduct === '咖啡机') {
+                    const allRequiredShown = requiredProducts.every(type => shownProducts.includes(type));
+                    if (!allRequiredShown) {
+                        isInvalid = true;
+                        invalidType = 2;
+                    }
                 }
             } else {
                 isInvalid = true;
                 invalidType = 1;
             }
 
-            // 配置提示文本
+            // 配置提示文本（不变）
             if (isInvalid) {
                 recommendText = invalidType === 1 
                     ? '未找到相关产品，本平台只售卖卫衣、彩椒、计算器、卷纸、咖啡机'
@@ -227,7 +327,7 @@
                 }
             }
 
-            // 显示提示/推荐文本
+            // 显示提示/推荐文本（不变）
             const textDiv = document.createElement('div');
             textDiv.className = 'flex items-start animate-fade-in';
             textDiv.innerHTML = isInvalid 
@@ -239,19 +339,19 @@
             // 无效场景直接返回
             if (isInvalid) return;
 
-            // 显示产品图片
+            // 显示产品图片（不变，图片点击事件已通过initImgPreview绑定）
             setTimeout(() => {
                 const imgDiv = document.createElement('div');
                 imgDiv.className = 'flex items-start animate-fade-in';
                 imgDiv.innerHTML = `
                     <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
-                        <img src="${productImgSrc}" alt="推荐的${currentProduct}" class="product-img-center">
+                        <img src="${productImgSrc}" alt="推荐的${currentProduct}" class="product-img-center" title="点击放大查看">
                     </div>
                 `;
                 chatContainer.appendChild(imgDiv);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
 
-                // 显示收尾提示
+                // 显示收尾提示（不变）
                 setTimeout(() => {
                     const finalDiv = document.createElement('div');
                     finalDiv.className = 'flex items-start animate-fade-in';
@@ -262,9 +362,13 @@
                     chatContainer.appendChild(finalDiv);
                     chatContainer.scrollTop = chatContainer.scrollHeight;
 
-                    // 咖啡机推荐后结束会话
+                    // 咖啡机推荐后结束会话（关键：会话结束时停止录音，释放资源）
                     if (currentProduct === '咖啡机') {
                         isSessionEnded = true;
+                        // 停止可能存在的录音进程
+                        if (speechRecognition) {
+                            speechRecognition.stop();
+                        }
                         setTimeout(showEndNotice, 500);
                     }
                 }, 800);
@@ -284,36 +388,66 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // 真实语音输入逻辑（核心修改：申请权限+识别）
-        function startVoiceRecognition() {
-            // 初始化语音识别实例
-            speechRecognition = initSpeechRecognition();
-            if (!speechRecognition) return;
+        // 微信环境麦克风权限引导（补充操作指引）
+        function showWechatPermissionGuide() {
+            const guideDiv = document.createElement('div');
+            guideDiv.className = 'flex items-start animate-fade-in';
+            guideDiv.innerHTML = `
+                <div class="px-4 py-2 rounded-xl bg-gray-200 text-gray-600 text-sm">
+                    <p class="wechat-tip">微信权限引导：</p>
+                    <p class="mt-1 text-xs">1. 点击微信顶部「麦克风权限请求」→ 选择「允许」</p>
+                    <p class="mt-0.5 text-xs">2. 若未弹出请求，可在微信「我→设置→隐私→麦克风」中开启本页面权限</p>
+                    <p class="mt-0.5 text-xs">3. 一次允许后，本次会话内无需重复申请</p>
+                </div>
+            `;
+            chatContainer.appendChild(guideDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
 
-            // 申请麦克风权限并开始识别
+        // 真实语音输入逻辑（适配微信环境，优化识别稳定性）
+        function startVoiceRecognition() {
+            // 会话已结束则不执行
+            if (isSessionEnded) return;
+            
+            // 初始化语音识别实例（首次创建，后续复用）
+            if (!speechRecognition) {
+                speechRecognition = initSpeechRecognition();
+                if (!speechRecognition) return;
+            }
+
+            // 微信环境下：先提示权限操作（避免用户忽略顶部请求）
+            if (isWechatEnv() && shownProducts.length === 0) {
+                setTimeout(() => {
+                    showWechatPermissionGuide();
+                }, 500);
+            }
+
+            // 申请麦克风权限并开始识别（首次允许后，浏览器记忆权限，后续无弹窗）
             speechRecognition.start();
 
-            // 监听识别成功事件
+            // 监听识别成功事件（不变）
             speechRecognition.onresult = (event) => {
-                // 获取最终识别结果（event.results[0][0].transcript 为中文文本）
                 const recognizedText = event.results[0][0].transcript.trim();
-                lastUserInput = recognizedText; // 存储真实识别结果
+                lastUserInput = recognizedText;
                 console.log('语音识别结果：', recognizedText);
             };
 
-            // 监听识别结束事件（无论成功/失败）
+            // 监听识别结束事件（不变）
             speechRecognition.onend = () => {
-                voiceModal.classList.add('hidden'); // 隐藏录音弹窗
+                voiceModal.classList.add('hidden');
                 if (lastUserInput) {
-                    // 识别到有效内容：显示用户语音消息并触发推荐
                     showUserVoiceMessage(lastUserInput);
                 } else {
-                    // 未识别到内容：提示重新尝试
+                    // 优化：区分微信环境提示
+                    const tipMsg = isWechatEnv()
+                        ? '未识别到有效语音内容，请确保已允许麦克风权限，并清晰说出“卫衣”“彩椒”等产品名称'
+                        : '未识别到有效语音内容，请重新尝试（建议清晰说出产品名称）';
+                    
                     const tipDiv = document.createElement('div');
                     tipDiv.className = 'flex items-start animate-fade-in';
                     tipDiv.innerHTML = `
                         <div class="px-4 py-2 rounded-xl bg-gray-200 text-gray-600 text-sm">
-                            未识别到有效语音内容，请重新尝试（建议清晰说出产品名称）
+                            ${tipMsg}
                         </div>
                     `;
                     chatContainer.appendChild(tipDiv);
@@ -321,17 +455,35 @@
                 }
             };
 
-            // 监听识别错误事件（如用户拒绝权限、无麦克风设备）
+            // 监听识别错误事件（适配微信环境，细化提示）
             speechRecognition.onerror = (event) => {
                 voiceModal.classList.add('hidden');
                 let errorMsg = '语音识别失败，请重试';
-                // 根据错误类型细化提示
-                if (event.error === 'not-allowed') {
-                    errorMsg = '麦克风权限已被拒绝，请在浏览器设置中开启权限后重试';
-                } else if (event.error === 'no-speech') {
-                    errorMsg = '未检测到语音输入，请重新尝试';
-                } else if (event.error === 'audio-capture') {
-                    errorMsg = '未检测到麦克风设备，请连接麦克风后重试';
+                
+                // 微信环境错误提示优化
+                if (isWechatEnv()) {
+                    switch (event.error) {
+                        case 'not-allowed':
+                            errorMsg = '麦克风权限已被拒绝，请参考权限引导开启微信麦克风权限（一次开启可持续使用）';
+                            break;
+                        case 'audio-capture':
+                            errorMsg = '未检测到麦克风设备，请使用带麦克风的设备（如手机）操作';
+                            break;
+                        case 'no-speech':
+                            errorMsg = '未检测到语音输入，请靠近麦克风并清晰说出产品名称';
+                            break;
+                        default:
+                            errorMsg = '微信语音识别失败，请刷新页面或稍后重试';
+                    }
+                } else {
+                    // 非微信环境错误提示
+                    if (event.error === 'not-allowed') {
+                        errorMsg = '麦克风权限已被拒绝，请在浏览器设置中开启权限后重试（一次开启可持续使用）';
+                    } else if (event.error === 'no-speech') {
+                        errorMsg = '未检测到语音输入，请重新尝试';
+                    } else if (event.error === 'audio-capture') {
+                        errorMsg = '未检测到麦克风设备，请连接麦克风后重试';
+                    }
                 }
 
                 // 显示错误提示
@@ -348,24 +500,21 @@
             };
         }
 
-        // 绑定语音按钮点击事件：开始录音
+        // 绑定语音按钮点击事件：开始录音（不变）
         voiceButton.addEventListener('click', () => {
             if (isSessionEnded) {
                 showEndNotice();
                 return;
             }
-            // 重置上一次识别结果
             lastUserInput = '';
-            // 显示录音弹窗
             voiceModal.classList.remove('hidden');
-            // 开始语音识别（申请权限+录音）
             startVoiceRecognition();
         });
 
-        // 绑定“完成录音”按钮事件：手动停止识别
+        // 绑定“完成录音”按钮事件：手动停止识别（不变）
         stopVoiceBtn.addEventListener('click', () => {
             if (speechRecognition) {
-                speechRecognition.stop(); // 手动停止语音识别
+                speechRecognition.stop();
             }
         });
 
@@ -379,8 +528,11 @@
             if (e.key === 'Enter' && !e.shiftKey) e.preventDefault();
         });
 
-        // 页面加载初始化
-        window.addEventListener('load', showInitialMessage);
+        // 页面加载初始化（新增图片预览初始化）
+        window.addEventListener('load', () => {
+            showInitialMessage();
+            initImgPreview(); // 初始化图片放大功能
+        });
     </script>
 </body>
 </html>
