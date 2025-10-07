@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>购物平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        neutral: '#F5F7FA',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .scrollbar-hide {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.3s ease-out forwards;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .product-img-center {
+                display: block;
+                margin: 0.75rem auto;
+                max-width: 90%;
+                border-radius: 8px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-neutral min-h-screen flex flex-col">
+    <!-- 顶部栏（仅保留背景，无文字） -->
+    <div class="header bg-primary py-4 shadow-md"></div>
+
+    <!-- 聊天容器 -->
+    <div class="chat-container flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4" id="chat-container"></div>
+
+    <!-- 输入交互区 -->
+    <div class="bg-white rounded-2xl shadow-md p-4 mb-6 mx-4">
+        <div class="flex items-center space-x-2 mb-3">
+            <!-- 文字输入按钮（启用） -->
+            <button id="text-input-btn" class="flex-1 py-2 rounded-lg bg-primary text-white flex items-center justify-center space-x-2 transition-all">
+                <i class="fa fa-keyboard-o"></i>
+                <span>文字</span>
+            </button>
+            <!-- 语音输入按钮（禁用） -->
+            <button id="voice-input-btn" class="flex-1 py-2 rounded-lg bg-gray-300 text-gray-500 flex items-center justify-center space-x-2 transition-all cursor-not-allowed" disabled>
+                <i class="fa fa-microphone"></i>
+                <span>语音</span>
+            </button>
+        </div>
+        
+        <!-- 文字输入容器（显示） -->
+        <div id="text-input-container" class="flex items-center space-x-2">
+            <textarea id="message-input" class="flex-1 border-none outline-none resize-none h-12 text-base placeholder-gray-400" placeholder="请输入您的需求..."></textarea>
+            <button id="send-btn" class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-colors">
+                <i class="fa fa-paper-plane"></i>
+            </button>
+        </div>
+        
+        <!-- 语音输入容器（隐藏） -->
+        <div id="voice-input-container" class="hidden py-6 flex flex-col items-center justify-center">
+            <div id="voice-button" class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 cursor-pointer hover:bg-primary/20 transition-all">
+                <i class="fa fa-microphone text-primary text-2xl"></i>
+            </div>
+            <p class="text-gray-600 text-sm">点击说话</p>
+        </div>
+    </div>
+
+    <!-- 语音录音弹窗 -->
+    <div id="voice-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-xs w-full text-center">
+            <div class="w-16 h-16 rounded-full bg-primary/10 mx-auto mb-4 flex items-center justify-center animate-pulse">
+                <i class="fa fa-microphone text-primary text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-1">正在倾听</h3>
+            <p class="text-gray-500 text-sm mb-4">请说出您的需求</p>
+            <button id="stop-voice-btn" class="bg-primary text-white px-5 py-2 rounded-full text-sm hover:bg-primary/90 transition-colors">
+                完成录音
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const textInputContainer = document.getElementById('text-input-container');
+        const voiceInputContainer = document.getElementById('voice-input-container');
+        const voiceButton = document.getElementById('voice-button');
+        const voiceModal = document.getElementById('voice-modal');
+        const stopVoiceBtn = document.getElementById('stop-voice-btn');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        
+        // 核心控制变量
+        let isSessionEnded = false;
+        const requiredProducts = ['卫衣', '彩椒', '计算器', '卷纸']; // 需优先展示的四类产品
+        let shownProducts = []; // 已展示的产品列表
+        let lastUserInput = ''; // 存储用户最后输入的搜索词
+
+        // 产品资源配置（关键词-文本-图片链接映射）
+        const productConfig = {
+            卫衣: {
+                text: '为您推荐下面这两款卫衣，买家评价详情使用星级制展示',
+                img: 'https://youke1.picui.cn/s1/2025/10/07/68e50905d32c9.png'
+            },
+            彩椒: {
+                text: '为您推荐下面这两款彩椒，买家评价详情使用星级制展示',
+                img: 'https://youke1.picui.cn/s1/2025/10/07/68e50905a1ae6.png'
+            },
+            计算器: {
+                text: '为您推荐下面这两款计算器，买家评价详情使用星级制展示',
+                img: 'https://youke1.picui.cn/s1/2025/10/07/68e5090686300.png'
+            },
+            卷纸: {
+                text: '为您推荐下面这两款卷纸，买家评价详情使用星级制展示',
+                img: 'https://youke1.picui.cn/s1/2025/10/07/68e5090692283.png'
+            },
+            咖啡机: {
+                text: '为您推荐下面这两款咖啡机，买家评价详情使用星级制展示',
+                img: 'https://youke1.picui.cn/s1/2025/10/07/68e50c4d23475.png'
+            }
+        };
+
+        // 显示初始欢迎语（原有内容保留）
+        function showInitialMessage() {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex items-start animate-fade-in';
+            msgDiv.innerHTML = `
+                <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
+                    很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、咖啡机 这五类产品，请按顺序输入对应产品名称浏览详情。
+                </div>
+            `;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 显示用户消息（原有内容保留）
+        function showUserMessage(msg) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex items-start justify-end animate-fade-in';
+            msgDiv.innerHTML = `
+                <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-primary text-white rounded-tr-none">
+                    ${msg}
+                </div>
+            `;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            if (!isSessionEnded) setTimeout(showProductRecommend, 800);
+        }
+
+        // 核心：区分两种无效场景并显示对应提示（关键修改处）
+        function showProductRecommend() {
+            let currentProduct = '';
+            let recommendText = '';
+            let productImgSrc = '';
+            let isInvalid = false; // 标记是否为无效请求
+            let invalidType = 0; // 1=未输入指定词，2=未按顺序搜咖啡机
+
+            // 1. 精准判断用户输入对应的场景
+            if (lastUserInput.includes('卫衣')) {
+                currentProduct = '卫衣';
+            } else if (lastUserInput.includes('彩椒')) {
+                currentProduct = '彩椒';
+            } else if (lastUserInput.includes('计算器')) {
+                currentProduct = '计算器';
+            } else if (lastUserInput.includes('纸')) {
+                currentProduct = '卷纸';
+            } else if (lastUserInput.includes('咖啡机')) {
+                currentProduct = '咖啡机';
+                // 校验：前四类是否全部展示（判定第二种无效场景）
+                const allRequiredShown = requiredProducts.every(type => shownProducts.includes(type));
+                if (!allRequiredShown) {
+                    isInvalid = true;
+                    invalidType = 2; // 未按顺序搜咖啡机
+                }
+            } else {
+                // 未包含任何指定产品关键词（判定第一种无效场景）
+                isInvalid = true;
+                invalidType = 1; // 未输入指定词
+            }
+
+            // 2. 为不同场景配置提示文本
+            if (isInvalid) {
+                if (invalidType === 1) {
+                    // 第一种无效场景：未输入包含指定词的信息
+                    recommendText = '未找到相关产品，本平台只售卖卫衣、彩椒、计算器、卷纸、咖啡机';
+                } else if (invalidType === 2) {
+                    // 第二种无效场景：未按顺序搜咖啡机
+                    recommendText = '请按顺序搜索以下指定产品：卫衣、彩椒、计算器、卷纸、咖啡机';
+                }
+            } else {
+                // 有效场景：配置产品文本和图片
+                const config = productConfig[currentProduct];
+                recommendText = config.text;
+                productImgSrc = config.img;
+                // 记录已展示产品（去重）
+                if (!shownProducts.includes(currentProduct)) {
+                    shownProducts.push(currentProduct);
+                }
+            }
+
+            // 3. 显示提示文本/有效推荐文本
+            const textDiv = document.createElement('div');
+            textDiv.className = 'flex items-start animate-fade-in';
+            textDiv.innerHTML = isInvalid 
+                ? `<!-- 无效提示用灰色背景 -->
+                    <div class="px-4 py-2 rounded-xl bg-gray-200 text-gray-600 text-sm">
+                        ${recommendText}
+                    </div>`
+                : `<!-- 有效推荐用白色背景 -->
+                    <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
+                        ${recommendText}
+                    </div>`;
+            chatContainer.appendChild(textDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // 4. 无效场景不结束会话，直接返回（输入栏保持可用）
+            if (isInvalid) {
+                return;
+            }
+
+            // 5. 有效场景：延迟显示产品图片（原有逻辑保留）
+            setTimeout(() => {
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'flex items-start animate-fade-in';
+                imgDiv.innerHTML = `
+                    <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
+                        <img src="${productImgSrc}" alt="推荐的${currentProduct}" class="product-img-center">
+                    </div>
+                `;
+                chatContainer.appendChild(imgDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                // 6. 有效场景：显示收尾提示（原有逻辑保留）
+                setTimeout(() => {
+                    const finalDiv = document.createElement('div');
+                    finalDiv.className = 'flex items-start animate-fade-in';
+                    const finalText = currentProduct === '咖啡机'
+                        ? `
+                            <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
+                                以上就是为您推荐的${currentProduct}，所有产品已推荐完毕，希望您满意。
+                            </div>`
+                        : `
+                            <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
+                                以上就是为您推荐的${currentProduct}，您可继续搜索其他指定产品。
+                            </div>`;
+                    finalDiv.innerHTML = finalText;
+                    chatContainer.appendChild(finalDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                    // 仅咖啡机推荐后触发会话结束（原有逻辑保留）
+                    if (currentProduct === '咖啡机') {
+                        isSessionEnded = true;
+                        setTimeout(showEndNotice, 500);
+                    }
+                }, 800);
+            }, 800);
+        }
+
+        // 会话结束提示（原有内容保留）
+        function showEndNotice() {
+            const endDiv = document.createElement('div');
+            endDiv.className = 'flex items-center justify-center animate-fade-in';
+            endDiv.innerHTML = `
+                <div class="px-4 py-2 rounded-xl bg-gray-200 text-gray-600 text-sm">
+                    会话结束
+                </div>
+            `;
+            chatContainer.appendChild(endDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 发送消息逻辑（原有内容保留）
+        function sendMessage() {
+            if (isSessionEnded) {
+                showEndNotice();
+                return;
+            }
+            const msg = messageInput.value.trim();
+            if (msg) {
+                lastUserInput = msg; // 记录用户搜索词
+                showUserMessage(msg);
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+            }
+        }
+
+        // 文本框自适应高度（原有内容保留）
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+
+        // 语音输入逻辑（原有内容保留）
+        voiceButton.addEventListener('click', () => voiceModal.classList.remove('hidden'));
+        stopVoiceBtn.addEventListener('click', () => {
+            voiceModal.classList.add('hidden');
+            setTimeout(() => {
+                if (isSessionEnded) {
+                    showEndNotice();
+                } else {
+                    showUserMessage('（🔊00:04"）');
+                }
+            }, 500);
+        });
+
+        // 发送按钮与回车事件（原有内容保留）
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // 页面加载显示初始消息（原有内容保留）
+        window.addEventListener('load', showInitialMessage);
+    </script>
+</body>
+</html>
