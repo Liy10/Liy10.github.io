@@ -41,6 +41,41 @@
                 margin: 0.75rem auto;
                 max-width: 90%;
                 border-radius: 8px;
+                cursor: pointer; /* 提示图片可点击 */
+                transition: transform 0.2s ease;
+            }
+            .product-img-center:hover {
+                transform: scale(1.02); /* 悬停时轻微放大 */
+            }
+            /* 图片预览模态框样式 */
+            .img-preview-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.9);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+            .img-preview-modal.show {
+                opacity: 1;
+                visibility: visible;
+            }
+            .preview-img {
+                max-width: 95%;
+                max-height: 90vh;
+                border-radius: 8px;
+                transform: scale(0.95);
+                transition: transform 0.3s ease;
+            }
+            .img-preview-modal.show .preview-img {
+                transform: scale(1);
             }
         }
     </style>
@@ -98,6 +133,11 @@
         </div>
     </div>
 
+    <!-- 图片预览模态框 -->
+    <div id="img-preview-modal" class="img-preview-modal" onclick="closeImagePreview()">
+        <img id="preview-image" class="preview-img" src="" alt="产品大图预览">
+    </div>
+
     <script>
         const chatContainer = document.getElementById('chat-container');
         const textInputContainer = document.getElementById('text-input-container');
@@ -107,6 +147,8 @@
         const stopVoiceBtn = document.getElementById('stop-voice-btn');
         const messageInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
+        const imgPreviewModal = document.getElementById('img-preview-modal');
+        const previewImage = document.getElementById('preview-image');
         
         // 核心控制变量
         let isSessionEnded = false;
@@ -138,13 +180,14 @@
             }
         };
 
-        // 显示初始欢迎语（原有内容保留）
+        // 显示初始欢迎语（添加图片预览提示）
         function showInitialMessage() {
             const msgDiv = document.createElement('div');
             msgDiv.className = 'flex items-start animate-fade-in';
             msgDiv.innerHTML = `
                 <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
                     很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、咖啡机 这五类产品，请按顺序输入对应产品名称浏览详情。
+                    <p class="text-xs text-gray-500 mt-1">提示：点击产品图片可放大查看，点击任意区域关闭预览</p>
                 </div>
             `;
             chatContainer.appendChild(msgDiv);
@@ -165,7 +208,21 @@
             if (!isSessionEnded) setTimeout(showProductRecommend, 800);
         }
 
-        // 核心：区分两种无效场景并显示对应提示（关键修改处）
+        // 打开图片预览
+        function openImagePreview(src) {
+            previewImage.src = src;
+            imgPreviewModal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+
+        // 关闭图片预览
+        function closeImagePreview() {
+            imgPreviewModal.classList.remove('show');
+            previewImage.src = '';
+            document.body.style.overflow = 'auto'; // 恢复背景滚动
+        }
+
+        // 核心：产品推荐逻辑
         function showProductRecommend() {
             let currentProduct = '';
             let recommendText = '';
@@ -173,7 +230,7 @@
             let isInvalid = false; // 标记是否为无效请求
             let invalidType = 0; // 1=未输入指定词，2=未按顺序搜咖啡机
 
-            // 1. 精准判断用户输入对应的场景
+            // 判断用户输入对应的场景
             if (lastUserInput.includes('卫衣')) {
                 currentProduct = '卫衣';
             } else if (lastUserInput.includes('彩椒')) {
@@ -184,26 +241,24 @@
                 currentProduct = '卷纸';
             } else if (lastUserInput.includes('咖啡机')) {
                 currentProduct = '咖啡机';
-                // 校验：前四类是否全部展示（判定第二种无效场景）
+                // 校验：前四类是否全部展示
                 const allRequiredShown = requiredProducts.every(type => shownProducts.includes(type));
                 if (!allRequiredShown) {
                     isInvalid = true;
                     invalidType = 2; // 未按顺序搜咖啡机
                 }
             } else {
-                // 未包含任何指定产品关键词（判定第一种无效场景）
+                // 未包含任何指定产品关键词
                 isInvalid = true;
                 invalidType = 1; // 未输入指定词
             }
 
-            // 2. 为不同场景配置提示文本
+            // 为不同场景配置提示文本
             if (isInvalid) {
                 if (invalidType === 1) {
-                    // 第一种无效场景：未输入包含指定词的信息
                     recommendText = '未找到相关产品，本平台只售卖卫衣、彩椒、计算器、卷纸、咖啡机';
                 } else if (invalidType === 2) {
-                    // 第二种无效场景：未按顺序搜咖啡机
-                    recommendText = '请按顺序搜索以下指定产品：卫衣、彩椒、计算器、卷纸、咖啡机';
+                    recommendText = '请最后搜索咖啡机';
                 }
             } else {
                 // 有效场景：配置产品文本和图片
@@ -216,7 +271,7 @@
                 }
             }
 
-            // 3. 显示提示文本/有效推荐文本
+            // 显示提示文本/有效推荐文本
             const textDiv = document.createElement('div');
             textDiv.className = 'flex items-start animate-fade-in';
             textDiv.innerHTML = isInvalid 
@@ -231,24 +286,25 @@
             chatContainer.appendChild(textDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // 4. 无效场景不结束会话，直接返回（输入栏保持可用）
+            // 无效场景不结束会话，直接返回
             if (isInvalid) {
                 return;
             }
 
-            // 5. 有效场景：延迟显示产品图片（原有逻辑保留）
+            // 有效场景：延迟显示产品图片
             setTimeout(() => {
                 const imgDiv = document.createElement('div');
                 imgDiv.className = 'flex items-start animate-fade-in';
                 imgDiv.innerHTML = `
                     <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
-                        <img src="${productImgSrc}" alt="推荐的${currentProduct}" class="product-img-center">
+                        <img src="${productImgSrc}" alt="推荐的${currentProduct}" class="product-img-center" 
+                             onclick="event.stopPropagation(); openImagePreview('${productImgSrc}')">
                     </div>
                 `;
                 chatContainer.appendChild(imgDiv);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
 
-                // 6. 有效场景：显示收尾提示（原有逻辑保留）
+                // 显示收尾提示
                 setTimeout(() => {
                     const finalDiv = document.createElement('div');
                     finalDiv.className = 'flex items-start animate-fade-in';
@@ -265,7 +321,7 @@
                     chatContainer.appendChild(finalDiv);
                     chatContainer.scrollTop = chatContainer.scrollHeight;
 
-                    // 仅咖啡机推荐后触发会话结束（原有逻辑保留）
+                    // 仅咖啡机推荐后触发会话结束
                     if (currentProduct === '咖啡机') {
                         isSessionEnded = true;
                         setTimeout(showEndNotice, 500);
@@ -274,7 +330,7 @@
             }, 800);
         }
 
-        // 会话结束提示（原有内容保留）
+        // 会话结束提示
         function showEndNotice() {
             const endDiv = document.createElement('div');
             endDiv.className = 'flex items-center justify-center animate-fade-in';
@@ -287,7 +343,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // 发送消息逻辑（原有内容保留）
+        // 发送消息逻辑
         function sendMessage() {
             if (isSessionEnded) {
                 showEndNotice();
@@ -302,13 +358,13 @@
             }
         }
 
-        // 文本框自适应高度（原有内容保留）
+        // 文本框自适应高度
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
 
-        // 语音输入逻辑（原有内容保留）
+        // 语音输入逻辑
         voiceButton.addEventListener('click', () => voiceModal.classList.remove('hidden'));
         stopVoiceBtn.addEventListener('click', () => {
             voiceModal.classList.add('hidden');
@@ -321,7 +377,7 @@
             }, 500);
         });
 
-        // 发送按钮与回车事件（原有内容保留）
+        // 发送按钮与回车事件
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -330,7 +386,7 @@
             }
         });
 
-        // 页面加载显示初始消息（原有内容保留）
+        // 页面加载显示初始消息
         window.addEventListener('load', showInitialMessage);
     </script>
 </body>
