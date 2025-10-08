@@ -293,7 +293,9 @@
             // 微信权限引导（首次）
             if (isWechatEnv() && shownProducts.length === 0) {
                 setTimeout(() => createTip(`
-                    <span class="wechat-tip">若微信用户无法语音搜索：</span>1. 请复制小程序链接（https://liy10.github.io/last.voice.html）使用浏览器打开
+                    <span class="wechat-tip">若微信用户无法使用语音：
+                        </span>1.请复制小程序链接（https://liy10.github.io/last.voice.html）使用浏览器打开
+                               2.再返回该页面继续填写问卷
                 `), 500);
             }
 
