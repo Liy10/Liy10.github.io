@@ -293,7 +293,7 @@
             // 微信权限引导（首次）
             if (isWechatEnv() && shownProducts.length === 0) {
                 setTimeout(() => createTip(`
-                    <span class="wechat-tip">若微信用户无法语音搜索：</span>1. 请复制小程序链接（https://liy10.github.io/last.voice.html）至浏览器打开
+                    <span class="wechat-tip">若微信用户无法语音搜索：</span>1. 请复制小程序链接（https://liy10.github.io/last.voice.html）使用浏览器打开
                 `), 500);
             }
 
@@ -331,7 +331,7 @@
         // 9. 页面初始化（更新欢迎语，告知用户新增“餐巾垫”）
         window.addEventListener('load', () => {
             const welcomeTip = isWechatEnv() 
-                ? '<p class="mt-2 text-xs text-gray-500 wechat-tip">微信用户：首次使用请允许麦克风权限，一次允许后可持续使用至会话结束</p>'
+                ? '<p class="mt-2 text-xs text-gray-500 wechat-tip"></p>'
                 : '';
             createMsg(`
                 很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、餐巾垫、咖啡机 这六类产品，
