@@ -36,7 +36,6 @@
             }
             .product-img-center:hover { transform: scale(1.02); }
             .wechat-tip { color: #165DFF; font-weight: 500; }
-            /* 修复图片预览样式的CSS语法错误 */
             #img-preview-modal {
                 position: fixed; 
                 inset: 0; 
@@ -62,20 +61,8 @@
     <!-- 聊天容器 -->
     <div class="chat-container flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4" id="chat-container"></div>
 
-    <!-- 输入交互区 -->
+    <!-- 输入交互区（仅保留语音输入核心功能） -->
     <div class="bg-white rounded-2xl shadow-md p-4 mb-6 mx-4">
-        <div class="flex items-center space-x-2 mb-3">
-            <button id="text-input-btn" class="flex-1 py-2 rounded-lg bg-gray-300 text-gray-500 flex items-center justify-center space-x-2 cursor-not-allowed" disabled>
-                <i class="fa fa-keyboard-o"></i><span>文字</span>
-            </button>
-            <button id="voice-input-btn" class="flex-1 py-2 rounded-lg bg-primary text-white flex items-center justify-center space-x-2">
-                <i class="fa fa-microphone"></i><span>语音</span>
-            </button>
-        </div>
-        <div id="text-input-container" class="hidden flex items-center space-x-2">
-            <textarea id="message-input" class="flex-1 border-none outline-none resize-none h-12 text-base placeholder-gray-400 cursor-not-allowed" disabled></textarea>
-            <button id="send-btn" class="w-10 h-10 rounded-full bg-gray-300 text-gray-500 cursor-not-allowed" disabled><i class="fa fa-paper-plane"></i></button>
-        </div>
         <div id="voice-input-container" class="py-6 flex flex-col items-center justify-center">
             <div id="voice-button" class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 cursor-pointer hover:bg-primary/20">
                 <i class="fa fa-microphone text-primary text-2xl"></i>
@@ -92,7 +79,7 @@
             </div>
             <h3 class="text-lg font-bold mb-1">正在倾听</h3>
             <p class="text-gray-500 text-sm mb-2">请说出产品名称（如“我要卫衣”“我要餐巾垫”）</p>
-            <!-- 微信提示：默认隐藏，仅微信环境显示 -->
+            <!-- 微信提示：仅微信环境显示 -->
             <p id="wechat-voice-tip" class="text-xs text-gray-500 mb-4 hidden">
                 <span class="wechat-tip">微信用户：</span>1.请复制小程序链接（https://liy10.github.io/last.voice.html）使用浏览器打开 2.再返回该页面继续填写问卷
             </p>
@@ -113,7 +100,7 @@
     </div>
 
     <script>
-        // 精简DOM元素获取
+        // 核心DOM元素获取（仅保留必需项）
         const [chatContainer, voiceButton, voiceModal, stopVoiceBtn, 
                imgPreviewModal, previewImg, closeImgBtn, wechatVoiceTip] = [
             document.getElementById('chat-container'),
@@ -123,15 +110,15 @@
             document.getElementById('img-preview-modal'),
             document.getElementById('preview-img'),
             document.getElementById('close-img-btn'),
-            document.getElementById('wechat-voice-tip') // 微信提示元素
+            document.getElementById('wechat-voice-tip')
         ];
 
-        // 核心配置：整合产品数据+口音适配词库（含“餐巾垫”配置）
+        // 核心产品配置（保留所有有效产品，含餐巾垫）
         const productConfig = {
             卫衣: {
                 text: '为您推荐下面这两款卫衣，买家评价详情使用星级制展示',
                 img: 'https://youke1.picui.cn/s1/2025/10/07/68e50905d32c9.png',
-                similar: ['卫衣', '微衣', '韦衣', '位衣','围衣',] // 口音适配
+                similar: ['卫衣', '微衣', '韦衣', '位衣','围衣']
             },
             彩椒: {
                 text: '为您推荐下面这两款彩椒，买家评价详情使用星级制展示',
@@ -148,10 +135,10 @@
                 img: 'https://youke1.picui.cn/s1/2025/10/07/68e5090692283.png',
                 similar: ['卷纸', '圈纸', '倦纸', '卷只', '卷子', '聚氨酯']
             },
-            餐巾垫: { // 新增“餐巾垫”产品配置
+            餐巾垫: {
                 text: '为您推荐下面这两款餐巾垫，买家评价详情使用星级制展示',
-                img: 'https://youke1.picui.cn/s1/2025/10/08/68e5ec9a251b5.png', // 餐巾垫图片链接
-                similar: ['餐巾垫', '餐斤垫', '餐巾店', '餐锦垫', '餐静电', '参金店'] // 适配常见口音发音
+                img: 'https://youke1.picui.cn/s1/2025/10/08/68e5ec9a251b5.png',
+                similar: ['餐巾垫', '餐斤垫', '餐巾店', '餐锦垫', '餐静电', '参金店']
             },
             咖啡机: {
                 text: '为您推荐下面这两款咖啡机，买家评价详情使用星级制展示',
@@ -159,37 +146,44 @@
                 similar: ['咖啡机', '咖啡鸡', '咖妃机', '咔啡机', '咖啡积', '卡飞机']
             }
         };
-        // 优先搜索产品列表（含“餐巾垫”）
+        // 优先搜索产品列表（控制推荐顺序）
         const requiredProducts = ['卫衣', '彩椒', '计算器', '卷纸', '餐巾垫'];
 
-        // 状态变量（精简）
-        let [isSessionEnded, shownProducts, lastUserInput, speechRecognition] = [false, [], '', null];
+        // 核心状态变量（仅保留必需项）
+        let [shownProducts, lastUserInput, speechRecognition] = [[], '', null];
 
-        // 工具函数：检测微信环境（适配移动端+PC端微信）
+        // 微信环境检测（核心工具函数）
         const isWechatEnv = () => {
-            const userAgent = window.navigator.userAgent.toLowerCase();
-            return userAgent.includes('micromessenger'); // 微信环境标识
+            return window.navigator.userAgent.toLowerCase().includes('micromessenger');
         };
 
-        // 1. 初始化语音识别（精简逻辑）
+        // 1. 语音识别初始化（核心功能）
         const initSpeechRecognition = () => {
             window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!window.SpeechRecognition) {
-                alert(isWechatEnv() ? '微信浏览器暂不支持语音识别，请升级微信' : '浏览器不支持语音识别，请用Chrome');
+                alert(isWechatEnv() ? '微信浏览器暂不支持语音识别，请先允许麦克风权限后重试' : '浏览器不支持语音识别，请用Chrome');
                 return null;
             }
             const rec = new window.SpeechRecognition();
             rec.lang = 'zh-CN';
             rec.interimResults = false;
             rec.maxAlternatives = 1;
+            
+            // 微信端权限拒绝处理
+            if (isWechatEnv()) {
+                rec.onpermissiondenied = () => {
+                    createTip('<span class="wechat-tip">微信用户：</span>麦克风权限已拒绝，请在微信设置（设置-通用-权限管理-麦克风）中开启');
+                    voiceModal.classList.add('hidden');
+                };
+            }
+            
             return rec;
         };
 
-        // 2. 模糊匹配关键词（支持口音，自动适配“餐巾垫”）
+        // 2. 产品关键词匹配（核心功能）
         const matchProductKeyword = (text) => {
             if (!text) return '';
             const processedText = text.toLowerCase().replace(/\s+|我要|想买|搜索|找|要|看/g, '');
-            // 遍历所有产品（含餐巾垫）的口音词库匹配
             for (const [product, { similar }] of Object.entries(productConfig)) {
                 if (similar.some(word => processedText.includes(word.toLowerCase()))) {
                     return product;
@@ -198,7 +192,7 @@
             return '';
         };
 
-        // 3. 消息创建工具（精简重复DOM操作）
+        // 3. 消息创建（核心UI函数）
         const createMsg = (content, isUser = false) => {
             const div = document.createElement('div');
             div.className = `flex items-start animate-fade-in ${isUser ? 'justify-end' : ''}`;
@@ -209,7 +203,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         };
 
-        // 4. 提示消息创建（精简）
+        // 4. 提示消息创建（核心UI函数）
         const createTip = (content) => {
             const div = document.createElement('div');
             div.className = 'flex items-start animate-fade-in';
@@ -218,9 +212,9 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         };
 
-        // 5. 图片预览功能（精简逻辑，支持餐巾垫图片预览）
+        // 5. 图片预览功能（核心交互）
         const initImgPreview = () => {
-            // 打开预览（自动适配餐巾垫图片）
+            // 打开预览
             document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('product-img-center')) {
                     previewImg.src = e.target.src;
@@ -238,33 +232,31 @@
             imgPreviewModal.addEventListener('click', (e) => e.target === imgPreviewModal && closePreview());
         };
 
-        // 6. 产品推荐逻辑（含餐巾垫优先级判断，仅全部搜完才能搜咖啡机）
+        // 6. 产品推荐（核心业务逻辑）
         const showProductRecommend = () => {
             const matchedProduct = matchProductKeyword(lastUserInput);
             let isInvalid = false, tip = '';
 
-            // 无效场景判断（新增餐巾垫优先级校验）
+            // 无效场景判断
             if (!matchedProduct) {
                 isInvalid = true;
                 tip = '未找到相关产品，本平台只售卖卫衣、彩椒、计算器、卷纸、餐巾垫、咖啡机';
             } else if (matchedProduct === '咖啡机' && !requiredProducts.every(p => shownProducts.includes(p))) {
-                // 需搜完“卫衣、彩椒、计算器、卷纸、餐巾垫”才能搜咖啡机
                 isInvalid = true;
                 tip = '请先搜索完卫衣、彩椒、计算器、卷纸、餐巾垫，最后再搜索咖啡机';
             }
 
-            // 处理场景
             if (isInvalid) {
                 createTip(tip);
                 return;
             }
 
-            // 有效场景：显示产品（含餐巾垫）
+            // 显示产品
             const { text, img } = productConfig[matchedProduct];
             createMsg(text);
             !shownProducts.includes(matchedProduct) && shownProducts.push(matchedProduct);
 
-            // 显示产品图片（含餐巾垫图片）
+            // 显示产品图片
             setTimeout(() => {
                 const imgDiv = document.createElement('div');
                 imgDiv.className = 'flex items-start animate-fade-in';
@@ -274,81 +266,101 @@
                 chatContainer.appendChild(imgDiv);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
 
-                // 收尾提示（适配餐巾垫场景）
+                // 收尾提示
                 setTimeout(() => {
                     const finalText = matchedProduct === '咖啡机' 
                         ? `以上就是为您推荐的${matchedProduct}，所有产品已推荐完毕，希望您满意。`
                         : `以上就是为您推荐的${matchedProduct}，您可继续通过语音搜索其他指定产品。`;
                     createMsg(finalText);
-
-                    // 会话结束（仅咖啡机触发）
-                    if (matchedProduct === '咖啡机') {
-                        isSessionEnded = true;
-                        speechRecognition && speechRecognition.stop();
-                        setTimeout(() => createTip('会话结束'), 500);
-                    }
                 }, 800);
             }, 800);
         };
 
-        // 7. 语音识别核心逻辑（精简，支持识别“餐巾”）
+        // 7. 语音识别核心逻辑（核心交互）
         const startVoiceRecognition = () => {
-            if (isSessionEnded) return createTip('会话结束');
             speechRecognition = speechRecognition || initSpeechRecognition();
             if (!speechRecognition) return;
 
-            // 微信权限引导（首次）
+            // 微信端权限引导
             if (isWechatEnv() && shownProducts.length === 0) {
                 setTimeout(() => createTip(`
-                    <span class="wechat-tip">若微信用户无法使用语音：
-                        </span>1.请复制小程序链接（https://liy10.github.io/last.voice.html）使用浏览器打开
-                               2.再返回该页面继续填写问卷
-                `), 500);
+                    <span class="wechat-tip">微信用户：</span>请点击"允许"麦克风权限以使用语音功能，若已拒绝请在微信设置中开启
+                `), 300);
             }
 
-            // 语音监听（自动识别“餐巾垫”及口音）
+            // 启动识别
             speechRecognition.start();
+            
+            // 结果处理
             speechRecognition.onresult = (e) => {
                 lastUserInput = e.results[0][0].transcript.trim();
             };
+            
+            // 结束处理
             speechRecognition.onend = () => {
                 voiceModal.classList.add('hidden');
-                lastUserInput 
-                    ? (createMsg(lastUserInput, true), setTimeout(showProductRecommend, 800))
-                    : createTip(isWechatEnv() 
-                        ? '未识别到有效内容，请确保已允许权限并清晰说出产品名称（如“我要餐巾垫”）' 
-                        : '未识别到有效内容，请重新尝试（可说“我要餐巾垫”）');
+                if (lastUserInput) {
+                    createMsg(lastUserInput, true);
+                    setTimeout(showProductRecommend, 800);
+                } else {
+                    const tipContent = isWechatEnv() 
+                        ? '未识别到有效内容，请确保已允许麦克风权限并清晰说出产品名称（如“我要餐巾垫”）' 
+                        : '未识别到有效内容，请重新尝试（可说“我要餐巾垫”）';
+                    createTip(tipContent);
+                }
             };
+            
+            // 错误处理
             speechRecognition.onerror = (e) => {
                 voiceModal.classList.add('hidden');
-                const errorTip = isWechatEnv() 
-                    ? e.error === 'not-allowed' ? '麦克风权限已拒绝，请参考引导开启' : '语音识别失败，请刷新重试'
-                    : e.error === 'not-allowed' ? '麦克风权限已拒绝，请在浏览器设置开启' : '语音识别失败，请重试';
+                let errorTip = '';
+                if (isWechatEnv()) {
+                    errorTip = e.error === 'not-allowed' 
+                        ? '<span class="wechat-tip">微信用户：</span>麦克风权限已拒绝，请在微信设置（设置-通用-权限管理）中开启'
+                        : '<span class="wechat-tip">微信用户：</span>语音识别失败，请检查网络后重试';
+                } else {
+                    errorTip = e.error === 'not-allowed' 
+                        ? '麦克风权限已拒绝，请在浏览器设置中开启' 
+                        : '语音识别失败，请重试';
+                }
                 createTip(errorTip);
             };
         };
 
-        // 8. 事件绑定（精简）
+        // 8. 核心事件绑定
         voiceButton.addEventListener('click', () => {
-            if (isSessionEnded) return createTip('会话结束');
             lastUserInput = '';
             voiceModal.classList.remove('hidden');
+            
+            // 控制微信提示显示
+            if (isWechatEnv()) {
+                wechatVoiceTip.classList.remove('hidden');
+            } else {
+                wechatVoiceTip.classList.add('hidden');
+            }
+            
             startVoiceRecognition();
         });
-        stopVoiceBtn.addEventListener('click', () => speechRecognition && speechRecognition.stop());
+        
+        stopVoiceBtn.addEventListener('click', () => {
+            if (speechRecognition) {
+                speechRecognition.stop();
+                voiceModal.classList.add('hidden');
+            }
+        });
 
-        // 9. 页面初始化（控制微信提示显示，告知用户新增“餐巾垫”）
+        // 9. 页面初始化（核心入口）
         window.addEventListener('load', () => {
-            // 关键修改：仅微信环境显示语音弹窗中的微信提示
+            // 微信提示初始化
             if (isWechatEnv() && wechatVoiceTip) {
                 wechatVoiceTip.classList.remove('hidden');
             }
 
-            // 欢迎语（非微信环境不显示微信相关提示）
+            // 欢迎语
             const welcomeContent = isWechatEnv() 
-                ? `很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、餐巾垫、咖啡机 这六类产品，
-                请点击语音按钮说出对应产品名称（如“我要卫衣”“我要餐巾垫”）浏览详情（请最后再搜索咖啡机）。
-                <p class="mt-2 text-xs text-gray-500 wechat-tip">微信用户请注意：若语音无法使用，请参考弹窗引导操作</p>`
+                ? `很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、餐巾垫、咖啡机 这六类产品。
+                请点击语音按钮并允许麦克风权限，说出对应产品名称（如“我要卫衣”“我要餐巾垫”）浏览详情（请最后再搜索咖啡机）。
+                <p class="mt-2 text-xs text-gray-500 wechat-tip">微信用户：若权限请求未弹出，请检查微信权限设置</p>`
                 : `很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、餐巾垫、咖啡机 这六类产品，
                 请点击语音按钮说出对应产品名称（如“我要卫衣”“我要餐巾垫”）浏览详情（请最后再搜索咖啡机）。`;
             
