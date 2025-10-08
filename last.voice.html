@@ -91,7 +91,7 @@
                 <i class="fa fa-microphone text-primary text-2xl"></i>
             </div>
             <h3 class="text-lg font-bold mb-1">正在倾听</h3>
-            <p class="text-gray-500 text-sm mb-2">请说出产品名称（如“我要卫衣”）</p>
+            <p class="text-gray-500 text-sm mb-2">请说出产品名称（如“我要卫衣”“我要餐巾垫”）</p>
             <p class="text-xs text-gray-500 mb-4"><span class="wechat-tip">微信用户：</span>未弹权限请检查微信设置</p>
             <button id="stop-voice-btn" class="bg-primary text-white px-5 py-2 rounded-full text-sm hover:bg-primary/90">
                 识别中···
@@ -122,35 +122,41 @@
             document.getElementById('close-img-btn')
         ];
 
-        // 核心配置：整合产品数据+口音适配词库
+        // 核心配置：整合产品数据+口音适配词库（新增“餐巾垫”配置）
         const productConfig = {
             卫衣: {
                 text: '为您推荐下面这两款卫衣，买家评价详情使用星级制展示',
                 img: 'https://youke1.picui.cn/s1/2025/10/07/68e50905d32c9.png',
-                similar: ['卫衣', '微衣', '韦衣', '位衣'] // 口音适配：类似发音
+                similar: ['卫衣', '微衣', '韦衣', '位衣','围衣',] // 口音适配：类似发音
             },
             彩椒: {
                 text: '为您推荐下面这两款彩椒，买家评价详情使用星级制展示',
                 img: 'https://youke1.picui.cn/s1/2025/10/07/68e50905a1ae6.png',
-                similar: ['彩椒', '菜椒', '才椒', '采椒']
+                similar: ['彩椒', '菜椒', '才椒', '采椒', '蔡椒', '彩交', '才交', '彩胶', '踩胶', '菜角']
             },
             计算器: {
                 text: '为您推荐下面这两款计算器，买家评价详情使用星级制展示',
                 img: 'https://youke1.picui.cn/s1/2025/10/07/68e5090686300.png',
-                similar: ['计算器', '计蒜器', '机算器', '记算器']
+                similar: ['计算器', '计蒜器', '机算器', '记算器', '计算期', '纪算期']
             },
             卷纸: {
                 text: '为您推荐下面这两款卷纸，买家评价详情使用星级制展示',
                 img: 'https://youke1.picui.cn/s1/2025/10/07/68e5090692283.png',
-                similar: ['卷纸', '圈纸', '倦纸', '卷只']
+                similar: ['卷纸', '圈纸', '倦纸', '卷只', '卷子', '聚氨酯']
+            },
+            餐巾垫: { // 新增“餐巾垫”产品配置
+                text: '为您推荐下面这两款餐巾垫，买家评价详情使用星级制展示',
+                img: 'https://youke1.picui.cn/s1/2025/10/08/68e5ec9a251b5.png', // 用户提供的餐巾垫图片链接
+                similar: ['餐巾垫', '餐斤垫', '餐巾店', '餐锦垫', '餐静电', '参金店'] // 适配常见口音发音
             },
             咖啡机: {
                 text: '为您推荐下面这两款咖啡机，买家评价详情使用星级制展示',
                 img: 'https://youke1.picui.cn/s1/2025/10/07/68e50c4d23475.png',
-                similar: ['咖啡机', '咖啡鸡', '咖妃机', '咔啡机']
+                similar: ['咖啡机', '咖啡鸡', '咖妃机', '咔啡机', '咖啡积', '卡飞机']
             }
         };
-        const requiredProducts = ['卫衣', '彩椒', '计算器', '卷纸'];
+        // 优先搜索产品列表（新增“餐巾垫”，与前四类一同优先）
+        const requiredProducts = ['卫衣', '彩椒', '计算器', '卷纸', '餐巾垫'];
 
         // 状态变量（精简）
         let [isSessionEnded, shownProducts, lastUserInput, speechRecognition] = [false, [], '', null];
@@ -172,11 +178,11 @@
             return rec;
         };
 
-        // 2. 模糊匹配关键词（支持口音）
+        // 2. 模糊匹配关键词（支持口音，自动适配“餐巾垫”）
         const matchProductKeyword = (text) => {
             if (!text) return '';
             const processedText = text.toLowerCase().replace(/\s+|我要|想买|搜索|找|要|看/g, '');
-            // 遍历口音词库匹配
+            // 遍历所有产品（含餐巾垫）的口音词库匹配
             for (const [product, { similar }] of Object.entries(productConfig)) {
                 if (similar.some(word => processedText.includes(word.toLowerCase()))) {
                     return product;
@@ -205,9 +211,9 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         };
 
-        // 5. 图片预览功能（精简逻辑）
+        // 5. 图片预览功能（精简逻辑，支持餐巾垫图片预览）
         const initImgPreview = () => {
-            // 打开预览
+            // 打开预览（自动适配餐巾垫图片）
             document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('product-img-center')) {
                     previewImg.src = e.target.src;
@@ -225,18 +231,19 @@
             imgPreviewModal.addEventListener('click', (e) => e.target === imgPreviewModal && closePreview());
         };
 
-        // 6. 产品推荐逻辑（精简分支）
+        // 6. 产品推荐逻辑（含餐巾垫优先级判断，仅全部搜完才能搜咖啡机）
         const showProductRecommend = () => {
             const matchedProduct = matchProductKeyword(lastUserInput);
             let isInvalid = false, tip = '';
 
-            // 无效场景判断
+            // 无效场景判断（新增餐巾垫优先级校验）
             if (!matchedProduct) {
                 isInvalid = true;
-                tip = '未找到相关产品，本平台只售卖卫衣、彩椒、计算器、卷纸、咖啡机';
+                tip = '未找到相关产品，本平台只售卖卫衣、彩椒、计算器、卷纸、餐巾垫、咖啡机';
             } else if (matchedProduct === '咖啡机' && !requiredProducts.every(p => shownProducts.includes(p))) {
+                // 需搜完“卫衣、彩椒、计算器、卷纸、餐巾垫”才能搜咖啡机
                 isInvalid = true;
-                tip = '请最后搜索咖啡机';
+                tip = '请先搜索完卫衣、彩椒、计算器、卷纸、餐巾垫，最后再搜索咖啡机';
             }
 
             // 处理场景
@@ -245,12 +252,12 @@
                 return;
             }
 
-            // 有效场景：显示产品
+            // 有效场景：显示产品（含餐巾垫）
             const { text, img } = productConfig[matchedProduct];
             createMsg(text);
             !shownProducts.includes(matchedProduct) && shownProducts.push(matchedProduct);
 
-            // 显示产品图片
+            // 显示产品图片（含餐巾垫图片）
             setTimeout(() => {
                 const imgDiv = document.createElement('div');
                 imgDiv.className = 'flex items-start animate-fade-in';
@@ -260,14 +267,14 @@
                 chatContainer.appendChild(imgDiv);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
 
-                // 收尾提示
+                // 收尾提示（适配餐巾垫场景）
                 setTimeout(() => {
                     const finalText = matchedProduct === '咖啡机' 
                         ? `以上就是为您推荐的${matchedProduct}，所有产品已推荐完毕，希望您满意。`
                         : `以上就是为您推荐的${matchedProduct}，您可继续通过语音搜索其他指定产品。`;
                     createMsg(finalText);
 
-                    // 会话结束
+                    // 会话结束（仅咖啡机触发）
                     if (matchedProduct === '咖啡机') {
                         isSessionEnded = true;
                         speechRecognition && speechRecognition.stop();
@@ -277,7 +284,7 @@
             }, 800);
         };
 
-        // 7. 语音识别核心逻辑（精简）
+        // 7. 语音识别核心逻辑（精简，支持识别“餐巾”）
         const startVoiceRecognition = () => {
             if (isSessionEnded) return createTip('会话结束');
             speechRecognition = speechRecognition || initSpeechRecognition();
@@ -286,12 +293,11 @@
             // 微信权限引导（首次）
             if (isWechatEnv() && shownProducts.length === 0) {
                 setTimeout(() => createTip(`
-                    <span class="wechat-tip">微信权限引导：</span>1. 点击顶部「麦克风权限请求」→ 允许<br>
-                    2. 未弹出请在微信「我→设置→隐私→麦克风」开启
+                    <span class="wechat-tip">若微信用户无法语音搜索：</span>1. 请复制小程序链接（https://liy10.github.io/last.voice.html）至浏览器打开
                 `), 500);
             }
 
-            // 语音监听
+            // 语音监听（自动识别“餐巾垫”及口音）
             speechRecognition.start();
             speechRecognition.onresult = (e) => {
                 lastUserInput = e.results[0][0].transcript.trim();
@@ -301,8 +307,8 @@
                 lastUserInput 
                     ? (createMsg(lastUserInput, true), setTimeout(showProductRecommend, 800))
                     : createTip(isWechatEnv() 
-                        ? '未识别到有效内容，请确保已允许权限并清晰说出产品名称' 
-                        : '未识别到有效内容，请重新尝试');
+                        ? '未识别到有效内容，请确保已允许权限并清晰说出产品名称（如“我要餐巾垫”）' 
+                        : '未识别到有效内容，请重新尝试（可说“我要餐巾垫”）');
             };
             speechRecognition.onerror = (e) => {
                 voiceModal.classList.add('hidden');
@@ -322,14 +328,14 @@
         });
         stopVoiceBtn.addEventListener('click', () => speechRecognition && speechRecognition.stop());
 
-        // 9. 页面初始化
+        // 9. 页面初始化（更新欢迎语，告知用户新增“餐巾垫”）
         window.addEventListener('load', () => {
             const welcomeTip = isWechatEnv() 
                 ? '<p class="mt-2 text-xs text-gray-500 wechat-tip">微信用户：首次使用请允许麦克风权限，一次允许后可持续使用至会话结束</p>'
                 : '';
             createMsg(`
-                很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、咖啡机 这五类产品，
-                请点击语音按钮说出对应产品名称（如“我要卫衣”）浏览详情（请最后再搜索咖啡机）。
+                很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、餐巾垫、咖啡机 这六类产品，
+                请点击语音按钮说出对应产品名称（如“我要卫衣”“我要餐巾垫”）浏览详情（请最后再搜索咖啡机）。
                 ${welcomeTip}
             `);
             initImgPreview();
@@ -337,4 +343,3 @@
     </script>
 </body>
 </html>
-
