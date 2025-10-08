@@ -150,13 +150,13 @@
         const imgPreviewModal = document.getElementById('img-preview-modal');
         const previewImage = document.getElementById('preview-image');
         
-        // 核心控制变量
+        // 核心控制变量：新增"餐巾垫"到优先展示列表（在咖啡机前）
         let isSessionEnded = false;
-        const requiredProducts = ['卫衣', '彩椒', '计算器', '卷纸']; // 需优先展示的四类产品
+        const requiredProducts = ['卫衣', '彩椒', '计算器', '卷纸', '餐巾垫']; // 新增"餐巾垫"
         let shownProducts = []; // 已展示的产品列表
         let lastUserInput = ''; // 存储用户最后输入的搜索词
 
-        // 产品资源配置（关键词-文本-图片链接映射）
+        // 产品资源配置：新增"餐巾垫"的文本和图片链接（请替换示例图片链接为实际链接）
         const productConfig = {
             卫衣: {
                 text: '为您推荐下面这两款卫衣，买家评价详情使用星级制展示',
@@ -174,19 +174,23 @@
                 text: '为您推荐下面这两款卷纸，买家评价详情使用星级制展示',
                 img: 'https://youke1.picui.cn/s1/2025/10/07/68e5090692283.png'
             },
+            餐巾垫: { // 新增"餐巾垫"配置
+                text: '为您推荐下面这两款餐巾垫，买家评价详情使用星级制展示',
+                img: 'https://youke1.picui.cn/s1/2025/10/08/68e5ec9a251b5.png' // 示例图链，可替换为实际餐巾垫图片
+            },
             咖啡机: {
                 text: '为您推荐下面这两款咖啡机，买家评价详情使用星级制展示',
                 img: 'https://youke1.picui.cn/s1/2025/10/07/68e50c4d23475.png'
             }
         };
 
-        // 显示初始欢迎语（添加图片预览提示）
+        // 显示初始欢迎语：更新产品列表，加入"餐巾垫"
         function showInitialMessage() {
             const msgDiv = document.createElement('div');
             msgDiv.className = 'flex items-start animate-fade-in';
             msgDiv.innerHTML = `
                 <div class="px-4 py-2 rounded-2xl max-w-[75%] bg-white text-gray-800 shadow-sm">
-                    很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、咖啡机 这五类产品，请按顺序输入对应产品名称浏览详情。
+                    很高兴为您服务，本平台共售卖卫衣、彩椒、计算器、卷纸、餐巾垫、咖啡机 这六类产品，请按顺序输入对应产品名称浏览详情。
                     <p class="text-xs text-gray-500 mt-1"></p>
                 </div>
             `;
@@ -208,21 +212,21 @@
             if (!isSessionEnded) setTimeout(showProductRecommend, 800);
         }
 
-        // 打开图片预览
+        // 打开图片预览（原有功能保留）
         function openImagePreview(src) {
             previewImage.src = src;
             imgPreviewModal.classList.add('show');
             document.body.style.overflow = 'hidden'; // 防止背景滚动
         }
 
-        // 关闭图片预览
+        // 关闭图片预览（原有功能保留）
         function closeImagePreview() {
             imgPreviewModal.classList.remove('show');
             previewImage.src = '';
             document.body.style.overflow = 'auto'; // 恢复背景滚动
         }
 
-        // 核心：产品推荐逻辑
+        // 核心：产品推荐逻辑（新增"餐巾垫"判断，保持咖啡机顺序校验）
         function showProductRecommend() {
             let currentProduct = '';
             let recommendText = '';
@@ -230,7 +234,7 @@
             let isInvalid = false; // 标记是否为无效请求
             let invalidType = 0; // 1=未输入指定词，2=未按顺序搜咖啡机
 
-            // 判断用户输入对应的场景
+            // 判断用户输入对应的场景：新增"餐巾垫"关键词检测
             if (lastUserInput.includes('卫衣')) {
                 currentProduct = '卫衣';
             } else if (lastUserInput.includes('彩椒')) {
@@ -239,9 +243,11 @@
                 currentProduct = '计算器';
             } else if (lastUserInput.includes('纸')) {
                 currentProduct = '卷纸';
+            } else if (lastUserInput.includes('餐巾垫')) { // 新增"餐巾垫"输入判断
+                currentProduct = '餐巾垫';
             } else if (lastUserInput.includes('咖啡机')) {
                 currentProduct = '咖啡机';
-                // 校验：前四类是否全部展示
+                // 校验：前五类（含餐巾垫）是否全部展示，未展示则提示"请最后搜索咖啡机"
                 const allRequiredShown = requiredProducts.every(type => shownProducts.includes(type));
                 if (!allRequiredShown) {
                     isInvalid = true;
@@ -253,25 +259,25 @@
                 invalidType = 1; // 未输入指定词
             }
 
-            // 为不同场景配置提示文本
+            // 为不同场景配置提示文本（原有逻辑保留，新增餐巾垫有效场景）
             if (isInvalid) {
                 if (invalidType === 1) {
-                    recommendText = '未找到相关产品，本平台只售卖卫衣、彩椒、计算器、卷纸、咖啡机';
+                    recommendText = '未找到相关产品，本平台只售卖卫衣、彩椒、计算器、卷纸、餐巾垫、咖啡机';
                 } else if (invalidType === 2) {
                     recommendText = '请最后搜索咖啡机';
                 }
             } else {
-                // 有效场景：配置产品文本和图片
+                // 有效场景：配置产品文本和图片（含餐巾垫）
                 const config = productConfig[currentProduct];
                 recommendText = config.text;
                 productImgSrc = config.img;
-                // 记录已展示产品（去重）
+                // 记录已展示产品（去重，含餐巾垫）
                 if (!shownProducts.includes(currentProduct)) {
                     shownProducts.push(currentProduct);
                 }
             }
 
-            // 显示提示文本/有效推荐文本
+            // 显示提示文本/有效推荐文本（原有样式保留）
             const textDiv = document.createElement('div');
             textDiv.className = 'flex items-start animate-fade-in';
             textDiv.innerHTML = isInvalid 
@@ -286,12 +292,12 @@
             chatContainer.appendChild(textDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            // 无效场景不结束会话，直接返回
+            // 无效场景不结束会话，直接返回（原有逻辑保留）
             if (isInvalid) {
                 return;
             }
 
-            // 有效场景：延迟显示产品图片
+            // 有效场景：延迟显示产品图片（含餐巾垫图片）
             setTimeout(() => {
                 const imgDiv = document.createElement('div');
                 imgDiv.className = 'flex items-start animate-fade-in';
@@ -304,7 +310,7 @@
                 chatContainer.appendChild(imgDiv);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
 
-                // 显示收尾提示
+                // 显示收尾提示（仅咖啡机推荐后结束会话，餐巾垫后仍提示继续搜索）
                 setTimeout(() => {
                     const finalDiv = document.createElement('div');
                     finalDiv.className = 'flex items-start animate-fade-in';
@@ -321,7 +327,7 @@
                     chatContainer.appendChild(finalDiv);
                     chatContainer.scrollTop = chatContainer.scrollHeight;
 
-                    // 仅咖啡机推荐后触发会话结束
+                    // 仅咖啡机推荐后触发会话结束（原有逻辑保留）
                     if (currentProduct === '咖啡机') {
                         isSessionEnded = true;
                         setTimeout(showEndNotice, 500);
@@ -330,7 +336,7 @@
             }, 800);
         }
 
-        // 会话结束提示
+        // 会话结束提示（原有功能保留）
         function showEndNotice() {
             const endDiv = document.createElement('div');
             endDiv.className = 'flex items-center justify-center animate-fade-in';
@@ -343,7 +349,7 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // 发送消息逻辑
+        // 发送消息逻辑（原有功能保留）
         function sendMessage() {
             if (isSessionEnded) {
                 showEndNotice();
@@ -358,13 +364,13 @@
             }
         }
 
-        // 文本框自适应高度
+        // 文本框自适应高度（原有功能保留）
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
 
-        // 语音输入逻辑
+        // 语音输入逻辑（原有功能保留，仍为禁用状态）
         voiceButton.addEventListener('click', () => voiceModal.classList.remove('hidden'));
         stopVoiceBtn.addEventListener('click', () => {
             voiceModal.classList.add('hidden');
@@ -377,7 +383,7 @@
             }, 500);
         });
 
-        // 发送按钮与回车事件
+        // 发送按钮与回车事件（原有功能保留）
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -386,9 +392,8 @@
             }
         });
 
-        // 页面加载显示初始消息
+        // 页面加载显示初始消息（原有功能保留）
         window.addEventListener('load', showInitialMessage);
     </script>
 </body>
 </html>
-
