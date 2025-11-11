@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>品牌充电宝专卖店</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #f5f5f5;
+            padding-bottom: 80px;
+            position: relative;
+        }
+        .view {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .view.active {
+            display: block;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #333;
+            display: none;
+            z-index: 10;
+        }
+        .back-btn.show {
+            display: block;
+        }
+
+        .home-view {
+            text-align: center;
+            padding-top: 60px;
+            position: relative;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .search-input {
+            width: 60%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            cursor: not-allowed;
+            text-align: center;
+        }
+        .search-input:disabled {
+            color: #666;
+        }
+        /* 搜索图标按钮样式 */
+        .search-icon-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .search-icon-btn.voice {
+            background-color: #ff6700;
+            color: white;
+        }
+        .search-icon-btn.disabled {
+            background-color: #ff6700; /* 禁用仍为橙色 */
+            color: white; /* 图标白色，与语音图标统一 */
+            cursor: not-allowed;
+            opacity: 0.7; /* 禁用状态添加透明度区分 */
+        }
+        .search-error {
+            color: #ff4d4f;
+            margin-top: 15px;
+            display: none;
+        }
+        .search-error.show {
+            display: block;
+        }
+        .home-poster {
+            margin-top: 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        .poster-img {
+            width: 80%; /* 缩小图片宽度 */
+            margin: 15px auto 0; /* 居中显示，顶部留间距 */
+            display: block;
+            border-radius: 8px;
+        }
+        .poster-title {
+            color: #ff6700;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .poster-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .poster-highlight {
+            color: #ff6700;
+            font-weight: bold;
+        }
+
+        .detail-view {
+            padding-top: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .detail-slider {
+            display: flex;
+            width: 200%;
+            transition: transform 0.3s ease;
+            touch-action: pan-y;
+        }
+        .detail-slide {
+            width: 50%;
+            padding: 0 10px;
+            flex-shrink: 0;
+        }
+        .product-item {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .detail-img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .detail-title {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        .detail-price {
+            font-size: 18px;
+            color: #ff6700;
+            margin-bottom: 15px;
+        }
+        .detail-spec {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        .spec-item {
+            margin: 6px 0;
+            font-size: 14px;
+        }
+        .slide-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .indicator {
+            padding: 6px 12px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .indicator.active {
+            color: #ff6700;
+            border-bottom: 2px solid #ff6700;
+        }
+        .add-cart {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 600px;
+            padding: 14px;
+            background-color: #ff6700;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .select-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            display: none;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .modal-desc {
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            background-color: #ff6700;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .modal-btn:hover {
+            background-color: #e65c00;
+        }
+        .modal-note {
+            font-size: 12px;
+            color: #999;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="goBack()">← 返回</button>
+
+    <div class="view home-view active" id="homeView">
+        <h2>充电宝线上专卖APP</h2>
+        <div class="search-box">
+            <!-- 搜索栏显示语音提示文字，禁用状态 -->
+            <input type="text" class="search-input" id="searchInput" value="点击麦克风语音搜索「充电宝」" disabled>
+            <button class="search-icon-btn disabled" disabled>⌨️</button>
+            <button class="search-icon-btn voice" onclick="startVoiceSearch()">🔊</button>
+        </div>
+        <div class="search-error" id="searchError">没有找到相关产品</div>
+        <div class="home-poster">
+            <div class="poster-title">线上渠道福利</div>
+            <div class="poster-desc">
+                活动期间，使用本店专用线上购物APP的用户，免费赠送<span class="poster-highlight">磁吸充电宝</span>一个！<br>
+                数量有限，先到先得，赠完即止~
+            </div>
+            <!-- 海报图片移到文字下方 -->
+            <img src="https://youke1.picui.cn/s1/2025/11/10/6911a0fd48829.jpg" class="poster-img" alt="线上店活动海报">
+        </div>
+    </div>
+
+    <div class="view detail-view" id="detailView">
+        <div class="detail-slider" id="detailSlider">
+            <div class="detail-slide">
+                <div class="product-item">
+                    <img src="https://youke1.picui.cn/s1/2025/11/10/69119464e3bdc.png" class="detail-img">
+                    <div class="detail-title">充电宝 M</div>
+                    <div class="detail-price">¥99</div>
+                    <div class="detail-spec">
+                        <div class="spec-item"><strong>充电速度评级：</strong>3级（等级越高，充电速度越快）</div>
+                        <div class="spec-item"><strong>其他功能特性：</strong>电池容量：10000 mAh、单输入单输出接口</div>
+                        <div class="spec-item"><strong>颜色款式：</strong>多种颜色（白、黑、蓝、粉等）</div>
+                        <div class="spec-item"><strong>其他外观特性：</strong>轻薄小巧、流线型设计、外观出众</div>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-slide">
+                <div class="product-item">
+                    <img src="https://youke1.picui.cn/s1/2025/11/10/691197bd324a4.png" class="detail-img">
+                    <div class="detail-title">充电宝 N</div>
+                    <div class="detail-price">¥99</div>
+                    <div class="detail-spec">
+                        <div class="spec-item"><strong>充电速度评级：</strong>4级（等级越高，充电速度越快）</div>
+                        <div class="spec-item"><strong>其他功能特性：</strong>电池容量：20000 mAh、单输入双输出接口</div>
+                        <div class="spec-item"><strong>颜色款式：</strong>仅黑色</div>
+                        <div class="spec-item"><strong>其他外观特性：</strong>厚重粗笨、简约方正设计、外观一般</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slide-indicators">
+            <div class="indicator active" data-index="0" onclick="slideTo(0)">第一款</div>
+            <div class="indicator" data-index="1" onclick="slideTo(1)">第二款</div>
+        </div>
+        
+        <button class="add-cart" onclick="showSelectModal()">加入购物车</button>
+    </div>
+
+    <div class="select-modal" id="selectModal">
+        <div class="modal-content">
+            <div class="modal-title">请选择要购买的充电宝</div>
+            <div class="modal-desc">选择后将免费赠送磁吸款充电器</div>
+            <div class="modal-btns">
+                <button class="modal-btn" onclick="addToCart('M')">充电宝 M</button>
+                <button class="modal-btn" onclick="addToCart('N')">充电宝 N</button>
+            </div>
+            <div class="modal-note">新用户专享福利，每个账号限领一次</div>
+        </div>
+    </div>
+
+    <!-- 引入LeanCloud SDK（用于数据统计，400份数据免费够用） -->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
+    <script>
+        // 初始化LeanCloud（替换成你的应用密钥，从LeanCloud后台获取）
+        AV.init({
+          appId: "你的AppID",
+          appKey: "你的AppKey",
+          serverURL: "你的服务器地址"
+        });
+
+        const homeView = document.getElementById('homeView');
+        const detailView = document.getElementById('detailView');
+        const searchError = document.getElementById('searchError');
+        const backBtn = document.querySelector('.back-btn');
+        const selectModal = document.getElementById('selectModal');
+        const detailSlider = document.getElementById('detailSlider');
+        const indicators = document.querySelectorAll('.indicator');
+        const searchInput = document.getElementById('searchInput'); // 搜索栏元素
+        
+        let currentPage = 'home';
+        let pageHistory = [];
+        let currentSlideIndex = 0;
+
+        // 语音搜索核心函数（支持口音识别，扩大识别范围）
+        function startVoiceSearch() {
+            // 检查浏览器兼容性（Chrome内核浏览器支持最佳）
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('您的浏览器不支持语音识别，请使用Chrome、Edge等现代浏览器尝试');
+                return;
+            }
+
+            // 初始化语音识别实例
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'zh-CN'; // 中文识别（适配大陆口音）
+            recognition.continuous = false; // 单次识别
+            recognition.interimResults = false; // 不返回中间结果
+            recognition.maxAlternatives = 3; // 保留3个识别候选（提升口音容错率）
+
+            // 搜索栏显示"正在聆听..."提示
+            searchInput.value = "正在聆听，请说出「充电宝」";
+
+            recognition.start();
+
+            // 识别成功回调（扩大关键词匹配范围，兼容口音差异）
+            recognition.onresult = function(event) {
+                // 获取所有识别候选并转为小写，提升匹配灵活性
+                const results = Array.from(event.results[0])
+                    .map(item => item.transcript.trim().toLowerCase());
+                
+                // 扩大识别关键词库（兼容"充电宝"的不同发音/相近表述）
+                const targetKeywords = ['充电宝', '充电', '移动电源', '充电机', '便携电源', '充电宝儿', '创建宝', '创建包'];
+                // 检查是否匹配任意关键词
+                const isMatched = results.some(result => 
+                    targetKeywords.some(keyword => result.includes(keyword))
+                );
+
+                if (isMatched) {
+                    // 识别成功，搜索栏显示识别结果
+                    searchInput.value = `${results[0]}`;
+                    setTimeout(() => {
+                        handleSearch(); // 延迟0.5秒跳转，让用户看到识别结果
+                    }, 500);
+                } else {
+                    // 识别失败，搜索栏恢复初始提示
+                    searchInput.value = "点击麦克风语音搜索「充电宝」";
+                    // 显示用户实际说的内容，方便调整
+                    alert(`未识别到相关关键词\n您说的是："${results[0]}"\n请尝试清晰说出"充电宝"重试`);
+                }
+            };
+
+            // 识别错误处理（搜索栏恢复初始提示）
+            recognition.onerror = function(event) {
+                searchInput.value = "点击麦克风语音搜索「充电宝」";
+                const errorMsg = {
+                    'no-speech': '未检测到语音，请重试',
+                    'audio-capture': '请允许麦克风权限',
+                    'not-allowed': '麦克风权限被拒绝，请在浏览器设置中开启',
+                    'service-not-allowed': '语音服务不可用，请稍后重试'
+                }[event.error] || `识别失败：${event.error}`;
+                alert(errorMsg);
+            };
+
+            // 识别结束（无论成功失败，若未匹配关键词则恢复初始提示）
+            recognition.onend = function() {
+                if (searchInput.value !== `已识别：${results?.[0]}` && searchInput.value !== "正在跳转...") {
+                    searchInput.value = "点击麦克风语音搜索「充电宝」";
+                }
+            };
+        }
+
+        function handleSearch() {
+            searchError.classList.remove('show');
+            // 搜索栏显示"正在跳转..."
+            searchInput.value = "识别成功，正在跳转...";
+            // 直接触发详情页跳转（仅支持语音搜索"充电宝"相关关键词）
+            pageHistory.push(currentPage);
+            currentPage = 'detail';
+            homeView.classList.remove('active');
+            detailView.classList.add('active');
+            backBtn.classList.add('show');
+            slideTo(0);
+        }
+
+        function slideTo(index) {
+            currentSlideIndex = index;
+            detailSlider.style.transform = `translateX(-${50 * index}%)`;
+            indicators.forEach((indicator, i) => {
+                indicator.classList.toggle('active', i === index);
+            });
+        }
+
+        detailSlider.addEventListener('touchstart', (e) => {
+            window.touchStartX = e.touches[0].clientX;
+        });
+
+        detailSlider.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diffX = touchEndX - window.touchStartX;
+            if (diffX < -50 && currentSlideIndex < 1) {
+                slideTo(1);
+            } else if (diffX > 50 && currentSlideIndex > 0) {
+                slideTo(0);
+            }
+        });
+
+        function showSelectModal() {
+            selectModal.style.display = 'flex';
+        }
+
+        selectModal.addEventListener('click', (e) => {
+            if (e.target === selectModal) {
+                selectModal.style.display = 'none';
+            }
+        });
+
+        // 加入购物车并统计数据（自动上传到LeanCloud）
+        function addToCart(type) {
+            selectModal.style.display = 'none';
+            // 准备要统计的数据
+            const UserChoice = AV.Object.extend('UserChoices');
+            const userChoice = new UserChoice();
+            userChoice.set('product', type); // 产品型号：M/N
+            userChoice.set('chooseTime', new Date()); // 选择时间
+            userChoice.set('deviceId', Math.random().toString(36).substr(2, 9)); // 匿名设备标识
+
+            // 发送数据到LeanCloud，成功/失败都不影响用户体验
+            userChoice.save().then(() => {
+                alert(`充电宝 ${type} 已加入购物车！\n新用户福利：免费赠送磁吸款充电器一个~`);
+            }, () => {
+                alert(`充电宝 ${type} 已加入购物车！\n新用户福利：免费赠送磁吸款充电器一个~`);
+            });
+        }
+
+        function goBack() {
+            if (pageHistory.length > 0) {
+                const prevPage = pageHistory.pop();
+                homeView.classList.remove('active');
+                detailView.classList.remove('active');
+                
+                if (prevPage === 'home') {
+                    homeView.classList.add('active');
+                    backBtn.classList.remove('show');
+                    // 返回首页后，搜索栏恢复初始提示
+                    searchInput.value = "点击麦克风语音搜索「充电宝」";
+                }
+                
+                currentPage = prevPage;
+            }
+        }
+    </script>
+</body>
+</html>
