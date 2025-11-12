@@ -357,7 +357,23 @@
         let pageHistory = [];
         let currentSlideIndex = 0;
 
-        // 语音搜索核心函数
+        // 核心：字符串相似度计算（适配发音不清/错别字）
+        function calculateSimilarity(str1, str2) {
+            const len1 = str1.length;
+            const len2 = str2.length;
+            const dp = Array(len1 + 1).fill().map(() => Array(len2 + 1).fill(0));
+            for (let i = 0; i <= len1; i++) dp[i][0] = i;
+            for (let j = 0; j <= len2; j++) dp[0][j] = j;
+            for (let i = 1; i <= len1; i++) {
+                for (let j = 1; j <= len2; j++) {
+                    const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+                    dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + cost);
+                }
+            }
+            return 1 - dp[len1][len2] / Math.max(len1, len2);
+        }
+
+        // 语音搜索核心函数（适配口音、语速、发音不清）
         function startVoiceSearch() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -368,52 +384,88 @@
             const recognition = new SpeechRecognition();
             recognition.lang = 'zh-CN';
             recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
+            recognition.interimResults = true; // 实时获取中间结果，适配语速快
+            recognition.maxAlternatives = 3; // 保留Top3识别结果，提高容错
+            recognition.timeout = 10000; // 延长超时到10秒，适配语速慢
+            recognition.noSpeechTimeout = 5000; // 无语音超时5秒，避免误判
 
-            // 提示正在聆听
-            searchInput.value = "正在聆听，请说出「充电宝」";
+            // 提示优化：告知可识别的灵活词汇
+            searchInput.value = "已开启麦克风，请说出「充电宝」";
 
             recognition.start();
 
-            // 识别成功回调
+            // 识别成功回调（增强容错逻辑）
             recognition.onresult = function(event) {
-                const result = event.results[0][0].transcript.trim();
-                // 显示识别结果2秒
-                searchInput.value = result;
-                
+                // 收集所有识别结果（包括中间结果）
+                let allResults = [];
+                for (let i = 0; i < event.results.length; i++) {
+                    allResults.push(event.results[i][0].transcript.trim());
+                }
+                const finalResult = allResults[allResults.length - 1]; // 最终识别结果
+                searchInput.value = `识别到：${finalResult}`;
+
+                // 核心：灵活关键词库（适配口音变体）
+                const targetKeywords = ['充电宝', '电宝', '充宝', '充点宝', '充电宝儿', '电饱', '充饱', '创建宝', '创建包'];
+                // 结果预处理：去空格、去标点、转小写（适配发音不清导致的分隔错误）
+                const processedResult = finalResult.replace(/\s+|[^\u4e00-\u9fa5]/g, '').toLowerCase();
+                const targetProcessed = targetKeywords.map(k => k.replace(/\s+/g, '').toLowerCase());
+
+                // 双重匹配逻辑：精准匹配 + 模糊匹配（相似度≥70%）
+                let isMatch = false;
+                // 1. 精准匹配（包含关键词或关键词包含结果）
+                for (const kw of targetProcessed) {
+                    if (processedResult.includes(kw) || kw.includes(processedResult)) {
+                        isMatch = true;
+                        break;
+                    }
+                }
+                // 2. 模糊匹配（适配发音不清/错别字）
+                if (!isMatch) {
+                    for (const kw of targetProcessed) {
+                        const similarity = calculateSimilarity(processedResult, kw);
+                        if (similarity >= 0.7) {
+                            isMatch = true;
+                            break;
+                        }
+                    }
+                }
+
                 // 2秒后执行搜索逻辑
                 setTimeout(() => {
-                    if (result.includes('电') || result.includes('宝')) {
+                    if (isMatch) {
                         handleSearch();
                     } else {
-                        searchInput.value = "未识别到关键词，请重试";
+                        searchInput.value = "未识别到相关产品，请重试";
                         setTimeout(() => {
-                            searchInput.value = "点击麦克风进行说出「充电宝」";
+                            searchInput.value = "点击右侧麦克风说出「充电宝」";
                         }, 1500);
                     }
                 }, 2000);
             };
 
-            // 识别错误处理
+            // 错误处理优化（区分真实错误和正常无语音）
             recognition.onerror = function(event) {
-                const errorMsg = {
-                    'no-speech': '未检测到语音，请重试',
-                    'audio-capture': '请允许麦克风权限',
+                const errorMsgMap = {
+                    'no-speech': '未检测到语音，请对着麦克风说话',
+                    'audio-capture': '请允许麦克风权限后重试',
                     'not-allowed': '麦克风权限被拒绝，请在浏览器设置中开启',
-                    'service-not-allowed': '语音服务不可用，请稍后重试'
-                }[event.error] || `识别失败：${event.error}`;
+                    'service-not-allowed': '语音服务不可用，请稍后重试',
+                    'timeout': '语音识别超时，请放慢语速重试',
+                    'network': '网络异常，语音识别失败'
+                };
+                const errorMsg = errorMsgMap[event.error] || `识别异常：${event.error}`;
                 searchInput.value = errorMsg;
                 setTimeout(() => {
-                    searchInput.value = "点击麦克风进行语音搜索";
-                }, 1500);
+                    searchInput.value = "点击右侧麦克风说出「充电宝」";
+                }, 2000);
             };
 
-            // 识别结束（未匹配关键词时恢复提示）
+            // 识别正常结束（无语音输入时）
             recognition.onend = function() {
-                if (searchInput.value !== "正在聆听，请说出「充电宝」" && !searchInput.value.includes('充电宝')) {
+                if (searchInput.value === "已开启麦克风，可说「充电宝/电宝/充宝」") {
+                    searchInput.value = "未检测到语音，请重试";
                     setTimeout(() => {
-                        searchInput.value = "点击麦克风说出「充电宝」";
+                        searchInput.value = "点击右侧麦克风说出「充电宝」";
                     }, 1500);
                 }
             };
@@ -492,7 +544,7 @@
                 if (prevPage === 'home') {
                     homeView.classList.add('active');
                     backBtn.classList.remove('show');
-                    searchInput.value = "点击麦克风说出「充电宝」";
+                    searchInput.value = "点击右侧麦克风说出「充电宝」";
                 }
                 
                 currentPage = prevPage;
