@@ -61,7 +61,7 @@
             padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 24px;
-            font-size: 16px;
+            font-size: 14px; /* 原16px，缩小一号 */
             background-color: #f9f9f9;
             cursor: not-allowed;
             text-align: center;
@@ -389,7 +389,7 @@
             recognition.timeout = 10000; // 延长超时到10秒，适配语速慢
             recognition.noSpeechTimeout = 5000; // 无语音超时5秒，避免误判
 
-            // 提示优化：告知可识别的灵活词汇
+            // 提示优化：告知可识别的灵活词汇（字体已通过CSS缩小）
             searchInput.value = "已开启麦克风，请说出「充电宝」";
 
             recognition.start();
@@ -430,7 +430,7 @@
                     }
                 }
 
-                // 2秒后执行搜索逻辑
+                // 停顿1秒后执行搜索逻辑（原2秒改为1秒）
                 setTimeout(() => {
                     if (isMatch) {
                         handleSearch();
@@ -440,7 +440,7 @@
                             searchInput.value = "点击右侧麦克风说出「充电宝」";
                         }, 1500);
                     }
-                }, 2000);
+                }, 1000);
             };
 
             // 错误处理优化（区分真实错误和正常无语音）
