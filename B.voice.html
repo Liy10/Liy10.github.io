@@ -62,25 +62,15 @@
             border: 1px solid #ddd;
             border-radius: 24px;
             font-size: 14px; /* 原16px，缩小一号 */
-            background-color: #f9f9f9;
-            cursor: not-allowed;
-            text-align: left; /* 改为居左对齐 */
         }
-        .search-input:disabled {
-            color: #666;
-        }
-        .voice-search-btn {
-            padding: 12px;
+        .search-btn {
+            padding: 12px 20px;
             background-color: #224b8f; /* 琉璃绀色主色 */
             color: white;
             border: none;
-            border-radius: 50%;
+            border-radius: 24px;
             cursor: pointer;
-            font-size: 18px;
-            transition: all 0.3s;
-        }
-        .voice-search-btn:hover {
-            background-color: #1a3b6d; /* 深色调hover效果 */
+            font-size: 16px;
         }
         .search-error {
             color: #ff4d4f;
@@ -99,8 +89,8 @@
             text-align: left;
         }
         .poster-img {
-            width: 100%;
-            margin: 15px 0 0;
+            width: 100%; /* 改为100%与白色背景同宽 */
+            margin: 15px 0 0; /* 去掉左右auto，仅保留顶部间距 */
             display: block;
             border-radius: 8px;
         }
@@ -267,8 +257,8 @@
     <div class="view home-view active" id="homeView">
         <h2>校园文创线上商城</h2>
         <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="点击右侧麦克风说出「充电宝」" disabled>
-            <button class="voice-search-btn" onclick="startVoiceSearch()">🎤</button>
+            <input type="text" class="search-input" id="searchInput" placeholder="在此输入「充电宝」">
+            <button class="search-btn" onclick="handleSearch()">搜索</button>
         </div>
         <div class="search-error" id="searchError">没有找到相关产品</div>
         <div class="home-poster">
@@ -337,11 +327,11 @@
     <!-- 引入LeanCloud SDK（数据收集功能） -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <script>
-        // 初始化LeanCloud（已填入你的新AppID和AppKey）
+        // 初始化LeanCloud（已填入你的AppID和AppKey，服务器地址自动匹配）
         AV.init({
-          appId: "ekLgiETWmtKbV3Otf9RTYGfi-gzGzoHsz",
-          appKey: "FMrbuHo4xHZ7lsio1P6zY4HW",
-          serverURL: "https://eklgietw.lc-cn-n1-shared.com"
+          appId: "BRIeJxj8NmBJ5kJ8J7y81US1-gzGzoHsz",
+          appKey: "Y6B011SA2WjsGg4uRBZ1bktj",
+          serverURL: "https://briejxj8.lc-cn-n1-shared.com"
         });
 
         const homeView = document.getElementById('homeView');
@@ -357,128 +347,26 @@
         let pageHistory = [];
         let currentSlideIndex = 0;
 
-        // 核心：字符串相似度计算（适配发音不清/错别字）
-        function calculateSimilarity(str1, str2) {
-            const len1 = str1.length;
-            const len2 = str2.length;
-            const dp = Array(len1 + 1).fill().map(() => Array(len2 + 1).fill(0));
-            for (let i = 0; i <= len1; i++) dp[i][0] = i;
-            for (let j = 0; j <= len2; j++) dp[0][j] = j;
-            for (let i = 1; i <= len1; i++) {
-                for (let j = 1; j <= len2; j++) {
-                    const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
-                    dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + cost);
-                }
-            }
-            return 1 - dp[len1][len2] / Math.max(len1, len2);
-        }
-
-        // 语音搜索核心函数（适配口音、语速、发音不清）
-        function startVoiceSearch() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert('您的浏览器不支持语音识别，请使用Chrome、Edge等现代浏览器尝试');
-                return;
-            }
-
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'zh-CN';
-            recognition.continuous = false;
-            recognition.interimResults = true; // 实时获取中间结果，适配语速快
-            recognition.maxAlternatives = 3; // 保留Top3识别结果，提高容错
-            recognition.timeout = 10000; // 延长超时到10秒，适配语速慢
-            recognition.noSpeechTimeout = 5000; // 无语音超时5秒，避免误判
-
-            // 提示优化：告知可识别的灵活词汇（字体已通过CSS缩小且居左）
-            searchInput.value = "已开启麦克风，请说出「充电宝」";
-
-            recognition.start();
-
-            // 识别成功回调（增强容错逻辑）
-            recognition.onresult = function(event) {
-                // 收集所有识别结果（包括中间结果）
-                let allResults = [];
-                for (let i = 0; i < event.results.length; i++) {
-                    allResults.push(event.results[i][0].transcript.trim());
-                }
-                const finalResult = allResults[allResults.length - 1]; // 最终识别结果
-                searchInput.value = `识别到：${finalResult}`;
-
-                // 核心：灵活关键词库（适配口音变体）
-                const targetKeywords = ['充电宝', '电宝', '充宝', '充点宝', '充电宝儿', '电饱', '充饱', '创建宝', '创建包'];
-                // 结果预处理：去空格、去标点、转小写（适配发音不清导致的分隔错误）
-                const processedResult = finalResult.replace(/\s+|[^\u4e00-\u9fa5]/g, '').toLowerCase();
-                const targetProcessed = targetKeywords.map(k => k.replace(/\s+/g, '').toLowerCase());
-
-                // 双重匹配逻辑：精准匹配 + 模糊匹配（相似度≥70%）
-                let isMatch = false;
-                // 1. 精准匹配（包含关键词或关键词包含结果）
-                for (const kw of targetProcessed) {
-                    if (processedResult.includes(kw) || kw.includes(processedResult)) {
-                        isMatch = true;
-                        break;
-                    }
-                }
-                // 2. 模糊匹配（适配发音不清/错别字）
-                if (!isMatch) {
-                    for (const kw of targetProcessed) {
-                        const similarity = calculateSimilarity(processedResult, kw);
-                        if (similarity >= 0.7) {
-                            isMatch = true;
-                            break;
-                        }
-                    }
-                }
-
-                // 停顿1秒后执行搜索逻辑（原2秒改为1秒）
-                setTimeout(() => {
-                    if (isMatch) {
-                        handleSearch();
-                    } else {
-                        searchInput.value = "未识别到相关产品，请重试";
-                        setTimeout(() => {
-                            searchInput.value = "点击右侧麦克风说出「充电宝」";
-                        }, 1500);
-                    }
-                }, 1000);
-            };
-
-            // 错误处理优化（区分真实错误和正常无语音）
-            recognition.onerror = function(event) {
-                const errorMsgMap = {
-                    'no-speech': '未检测到语音，请对着麦克风说话',
-                    'audio-capture': '请允许麦克风权限后重试',
-                    'not-allowed': '麦克风权限被拒绝，请在浏览器设置中开启',
-                    'service-not-allowed': '语音服务不可用，请稍后重试',
-                    'timeout': '语音识别超时，请放慢语速重试',
-                    'network': '网络异常，语音识别失败'
-                };
-                const errorMsg = errorMsgMap[event.error] || `识别异常：${event.error}`;
-                searchInput.value = errorMsg;
-                setTimeout(() => {
-                    searchInput.value = "点击右侧麦克风说出「充电宝」";
-                }, 2000);
-            };
-
-            // 识别正常结束（无语音输入时）
-            recognition.onend = function() {
-                if (searchInput.value === "已开启麦克风，可说「充电宝/电宝/充宝」") {
-                    searchInput.value = "未检测到语音，请重试";
-                    setTimeout(() => {
-                        searchInput.value = "点击右侧麦克风说出「充电宝」";
-                    }, 1500);
-                }
-            };
-        }
-
         function handleSearch() {
+            const inputVal = searchInput.value.trim();
             searchError.classList.remove('show');
-            pageHistory.push(currentPage);
-            currentPage = 'detail';
-            homeView.classList.remove('active');
-            detailView.classList.add('active');
-            backBtn.classList.add('show');
-            slideTo(0);
+            
+            // 显示输入的搜索词
+            searchInput.value = inputVal;
+            
+            if (inputVal.includes('电') || inputVal.includes('宝')) {
+                // 停顿1秒后跳转
+                setTimeout(() => {
+                    pageHistory.push(currentPage);
+                    currentPage = 'detail';
+                    homeView.classList.remove('active');
+                    detailView.classList.add('active');
+                    backBtn.classList.add('show');
+                    slideTo(0);
+                }, 1000); // 延迟1秒
+            } else {
+                searchError.classList.add('show');
+            }
         }
 
         function slideTo(index) {
@@ -544,7 +432,6 @@
                 if (prevPage === 'home') {
                     homeView.classList.add('active');
                     backBtn.classList.remove('show');
-                    searchInput.value = "点击右侧麦克风说出「充电宝」";
                 }
                 
                 currentPage = prevPage;
