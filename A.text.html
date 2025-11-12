@@ -61,7 +61,7 @@
             padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 24px;
-            font-size: 16px;
+            font-size: 14px; /* 原16px，缩小一号 */
         }
         .search-btn {
             padding: 12px 20px;
@@ -348,16 +348,22 @@
         let currentSlideIndex = 0;
 
         function handleSearch() {
-            const input = searchInput.value.trim();
+            const inputVal = searchInput.value.trim();
             searchError.classList.remove('show');
             
-            if (input.includes('电') || input.includes('宝')) {
-                pageHistory.push(currentPage);
-                currentPage = 'detail';
-                homeView.classList.remove('active');
-                detailView.classList.add('active');
-                backBtn.classList.add('show');
-                slideTo(0);
+            // 显示输入的搜索词
+            searchInput.value = inputVal;
+            
+            if (inputVal.includes('电') || inputVal.includes('宝')) {
+                // 停顿1秒后跳转
+                setTimeout(() => {
+                    pageHistory.push(currentPage);
+                    currentPage = 'detail';
+                    homeView.classList.remove('active');
+                    detailView.classList.add('active');
+                    backBtn.classList.add('show');
+                    slideTo(0);
+                }, 1000); // 延迟1秒
             } else {
                 searchError.classList.add('show');
             }
