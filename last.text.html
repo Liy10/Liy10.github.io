@@ -65,7 +65,7 @@
         }
         .search-btn {
             padding: 12px 20px;
-            background-color: #ff6700;
+            background-color: #224b8f; /* 琉璃绀色主色 */
             color: white;
             border: none;
             border-radius: 24px;
@@ -95,18 +95,20 @@
             border-radius: 8px;
         }
         .poster-title {
-            color: #ff6700;
+            color: #224b8f; /* 琉璃绀色主色 */
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 8px;
         }
         .poster-desc {
-            font-size: 14px;
             color: #666;
-            line-height: 1.5;
+            line-height: 1.6;
+        }
+        .poster-desc-large {
+            font-size: 16px; /* 原14px增大一号 */
         }
         .poster-highlight {
-            color: #ff6700;
+            color: #224b8f; /* 琉璃绀色主色 */
             font-weight: bold;
         }
 
@@ -145,7 +147,7 @@
         }
         .detail-price {
             font-size: 18px;
-            color: #ff6700;
+            color: #224b8f; /* 琉璃绀色主色 */
             margin-bottom: 15px;
         }
         .detail-spec {
@@ -172,8 +174,8 @@
             transition: all 0.3s;
         }
         .indicator.active {
-            color: #ff6700;
-            border-bottom: 2px solid #ff6700;
+            color: #224b8f; /* 琉璃绀色主色 */
+            border-bottom: 2px solid #224b8f; /* 琉璃绀色主色 */
         }
         .add-cart {
             position: fixed;
@@ -183,7 +185,7 @@
             width: calc(100% - 40px);
             max-width: 600px;
             padding: 14px;
-            background-color: #ff6700;
+            background-color: #224b8f; /* 琉璃绀色主色 */
             color: white;
             border: none;
             border-radius: 8px;
@@ -231,7 +233,7 @@
         .modal-btn {
             flex: 1;
             padding: 12px;
-            background-color: #ff6700;
+            background-color: #224b8f; /* 琉璃绀色主色 */
             color: white;
             border: none;
             border-radius: 6px;
@@ -240,7 +242,7 @@
             transition: all 0.3s;
         }
         .modal-btn:hover {
-            background-color: #e65c00;
+            background-color: #1a3b6d; /* 琉璃绀色深色调（hover效果） */
         }
         .modal-note {
             font-size: 12px;
@@ -253,18 +255,20 @@
     <button class="back-btn" onclick="goBack()">← 返回</button>
 
     <div class="view home-view active" id="homeView">
-        <h2>充电宝线上专卖APP</h2>
+        <h2>校园文创线上商城</h2>
         <div class="search-box">
             <input type="text" class="search-input" id="searchInput" placeholder="在此输入「充电宝」">
             <button class="search-btn" onclick="handleSearch()">搜索</button>
         </div>
         <div class="search-error" id="searchError">没有找到相关产品</div>
         <div class="home-poster">
-            <div class="poster-title">让校园文创更懂你！</div>
+            <div class="poster-title">📢📢📢 让校园文创更懂你！</div>
             <div class="poster-desc">
-                兰大文创店新网页上线测试中～<br>
-                浏览产品展示页并留下你的评价即可参与抽奖<br>
-                奖品：<span class="poster-highlight">30个兰大文创充电宝</span>，数量有限先到先得！
+                <div class="poster-desc-large">
+                    文创店新网页上线测试中～<br>
+                    浏览产品展示页并留下你的评价即可参与抽奖<br>
+                    奖品：<span class="poster-highlight">30个文创充电宝</span>，数量有限先到先得！
+                </div>
             </div>
             <!-- 海报图片移到文字下方 -->
             <img src="https://youke1.picui.cn/s1/2025/11/10/6911a0fd48829.jpg" class="poster-img" alt="线上店活动海报">
