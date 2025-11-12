@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>品牌充电宝专卖店</title>
+    <title>校园文创线上商城</title>
     <style>
         * {
             margin: 0;
@@ -324,7 +324,16 @@
         </div>
     </div>
 
+    <!-- 引入LeanCloud SDK（数据收集功能） -->
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <script>
+        // 初始化LeanCloud（已填入你的AppID和AppKey，服务器地址自动匹配）
+        AV.init({
+          appId: "BRIeJxj8NmBJ5kJ8J7y81US1-gzGzoHsz",
+          appKey: "Y6B011SA2WjsGg4uRBZ1bktj",
+          serverURL: "https://briejxj8.lc-cn-n1-shared.com"
+        });
+
         const homeView = document.getElementById('homeView');
         const detailView = document.getElementById('detailView');
         const searchInput = document.getElementById('searchInput');
@@ -386,9 +395,26 @@
             }
         });
 
+        // 新增数据收集：用户选择后自动上传到LeanCloud
         function addToCart(type) {
             selectModal.style.display = 'none';
             alert(`充电宝 ${type} 已加入购物车！`);
+
+            // 创建数据记录表格（表名：UserChoices，自动创建）
+            const UserChoice = AV.Object.extend('UserChoices');
+            const userChoice = new UserChoice();
+            
+            // 存储核心数据（匿名化，保护用户隐私）
+            userChoice.set('productType', type); // 选择的产品：M或N
+            userChoice.set('chooseTime', new Date()); // 选择时间（精确到秒）
+            userChoice.set('anonymousId', Math.random().toString(36).substr(2, 9)); // 匿名标识（避免重复统计）
+
+            // 上传数据（成功/失败不影响用户体验）
+            userChoice.save().then(() => {
+                console.log('选择数据已成功保存'); // 仅开发者控制台可见
+            }, (error) => {
+                console.log('数据保存失败：', error.message); // 错误提示仅开发者可见
+            });
         }
 
         function goBack() {
