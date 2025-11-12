@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>品牌充电宝专卖店</title>
+    <title>校园文创线上商城</title>
     <style>
         * {
             margin: 0;
@@ -57,7 +57,7 @@
             margin-top: 20px;
         }
         .search-input {
-            width: 60%;
+            width: 70%;
             padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 24px;
@@ -69,24 +69,18 @@
         .search-input:disabled {
             color: #666;
         }
-        /* 搜索图标按钮样式 */
-        .search-icon-btn {
+        .voice-search-btn {
             padding: 12px;
+            background-color: #224b8f; /* 琉璃绀色主色 */
+            color: white;
             border: none;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             transition: all 0.3s;
         }
-        .search-icon-btn.voice {
-            background-color: #ff6700;
-            color: white;
-        }
-        .search-icon-btn.disabled {
-            background-color: #ff6700; /* 禁用仍为橙色 */
-            color: white; /* 图标白色，与语音图标统一 */
-            cursor: not-allowed;
-            opacity: 0.7; /* 禁用状态添加透明度区分 */
+        .voice-search-btn:hover {
+            background-color: #1a3b6d; /* 深色调hover效果 */
         }
         .search-error {
             color: #ff4d4f;
@@ -105,24 +99,26 @@
             text-align: left;
         }
         .poster-img {
-            width: 80%; /* 缩小图片宽度 */
-            margin: 15px auto 0; /* 居中显示，顶部留间距 */
+            width: 100%;
+            margin: 15px 0 0;
             display: block;
             border-radius: 8px;
         }
         .poster-title {
-            color: #ff6700;
+            color: #224b8f; /* 琉璃绀色主色 */
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 8px;
         }
         .poster-desc {
-            font-size: 14px;
             color: #666;
-            line-height: 1.5;
+            line-height: 1.6;
+        }
+        .poster-desc-large {
+            font-size: 16px; /* 原14px增大一号 */
         }
         .poster-highlight {
-            color: #ff6700;
+            color: #224b8f; /* 琉璃绀色主色 */
             font-weight: bold;
         }
 
@@ -161,7 +157,7 @@
         }
         .detail-price {
             font-size: 18px;
-            color: #ff6700;
+            color: #224b8f; /* 琉璃绀色主色 */
             margin-bottom: 15px;
         }
         .detail-spec {
@@ -188,8 +184,8 @@
             transition: all 0.3s;
         }
         .indicator.active {
-            color: #ff6700;
-            border-bottom: 2px solid #ff6700;
+            color: #224b8f; /* 琉璃绀色主色 */
+            border-bottom: 2px solid #224b8f; /* 琉璃绀色主色 */
         }
         .add-cart {
             position: fixed;
@@ -199,7 +195,7 @@
             width: calc(100% - 40px);
             max-width: 600px;
             padding: 14px;
-            background-color: #ff6700;
+            background-color: #224b8f; /* 琉璃绀色主色 */
             color: white;
             border: none;
             border-radius: 8px;
@@ -247,7 +243,7 @@
         .modal-btn {
             flex: 1;
             padding: 12px;
-            background-color: #ff6700;
+            background-color: #224b8f; /* 琉璃绀色主色 */
             color: white;
             border: none;
             border-radius: 6px;
@@ -256,7 +252,7 @@
             transition: all 0.3s;
         }
         .modal-btn:hover {
-            background-color: #e65c00;
+            background-color: #1a3b6d; /* 琉璃绀色深色调（hover效果） */
         }
         .modal-note {
             font-size: 12px;
@@ -269,22 +265,22 @@
     <button class="back-btn" onclick="goBack()">← 返回</button>
 
     <div class="view home-view active" id="homeView">
-        <h2>充电宝线上专卖APP</h2>
+        <h2>校园文创线上商城</h2>
         <div class="search-box">
-            <!-- 搜索栏显示语音提示文字，禁用状态 -->
-            <input type="text" class="search-input" id="searchInput" value="点击麦克风语音搜索「充电宝」" disabled>
-            <button class="search-icon-btn disabled" disabled>⌨️</button>
-            <button class="search-icon-btn voice" onclick="startVoiceSearch()">🔊</button>
+            <input type="text" class="search-input" id="searchInput" placeholder="点击麦克风说出「充电宝」" disabled>
+            <button class="voice-search-btn" onclick="startVoiceSearch()">🎤</button>
         </div>
         <div class="search-error" id="searchError">没有找到相关产品</div>
         <div class="home-poster">
-            <div class="poster-title">线上渠道福利</div>
+            <div class="poster-title">📢📢📢 让校园文创更懂你！</div>
             <div class="poster-desc">
-                活动期间，使用本店专用线上购物APP的用户，免费赠送<span class="poster-highlight">磁吸充电宝</span>一个！<br>
-                数量有限，先到先得，赠完即止~
+                <div class="poster-desc-large">
+                    文创店新网页上线测试中～<br>
+                    浏览产品展示页并留下你的建议即可参与抽奖<br>
+                    奖品：<span class="poster-highlight">30个文创充电宝</span>，数量有限先到先得！
+                </div>
             </div>
-            <!-- 海报图片移到文字下方 -->
-            <img src="https://youke1.picui.cn/s1/2025/11/10/6911a0fd48829.jpg" class="poster-img" alt="线上店活动海报">
+            <img src="https://youke1.picui.cn/s1/2025/11/12/6914445984c13.png" class="poster-img" alt="线上店活动海报">
         </div>
     </div>
 
@@ -297,22 +293,22 @@
                     <div class="detail-price">¥99</div>
                     <div class="detail-spec">
                         <div class="spec-item"><strong>充电速度评级：</strong>3级（等级越高，充电速度越快）</div>
-                        <div class="spec-item"><strong>其他功能特性：</strong>电池容量：10000 mAh、单输入单输出接口</div>
+                        <div class="spec-item"><strong>其他功能特性：</strong>电池容量10000 mAh、单输入单输出接口</div>
                         <div class="spec-item"><strong>颜色款式：</strong>多种颜色（白、黑、蓝、粉等）</div>
-                        <div class="spec-item"><strong>其他外观特性：</strong>轻薄小巧、流线型设计、外观出众</div>
+                        <div class="spec-item"><strong>其他外观特性：</strong>轻薄小巧、流线型设计、颜值高</div>
                     </div>
                 </div>
             </div>
             <div class="detail-slide">
                 <div class="product-item">
-                    <img src="https://youke1.picui.cn/s1/2025/11/10/691197bd324a4.png" class="detail-img">
+                    <img src="https://youke1.picui.cn/s1/2025/11/12/691450b372874.png" class="detail-img">
                     <div class="detail-title">充电宝 N</div>
                     <div class="detail-price">¥99</div>
                     <div class="detail-spec">
-                        <div class="spec-item"><strong>充电速度评级：</strong>4级（等级越高，充电速度越快）</div>
-                        <div class="spec-item"><strong>其他功能特性：</strong>电池容量：20000 mAh、单输入双输出接口</div>
+                        <div class="spec-item"><strong>充电速度评级：</strong>5级（等级越高，充电速度越快）</div>
+                        <div class="spec-item"><strong>其他功能特性：</strong>电池容量20000 mAh、单输入双输出接口</div>
                         <div class="spec-item"><strong>颜色款式：</strong>仅黑色</div>
-                        <div class="spec-item"><strong>其他外观特性：</strong>厚重粗笨、简约方正设计、外观一般</div>
+                        <div class="spec-item"><strong>其他外观特性：</strong>简约方正设计、颜值适中</div>
                     </div>
                 </div>
             </div>
@@ -328,112 +324,206 @@
 
     <div class="select-modal" id="selectModal">
         <div class="modal-content">
-            <div class="modal-title">请选择要购买的充电宝</div>
-            <div class="modal-desc">选择后将免费赠送磁吸款充电器</div>
+            <div class="modal-title">请选择您心仪的充电宝</div>
             <div class="modal-btns">
                 <button class="modal-btn" onclick="addToCart('M')">充电宝 M</button>
                 <button class="modal-btn" onclick="addToCart('N')">充电宝 N</button>
             </div>
-            <div class="modal-note">新用户专享福利，每个账号限领一次</div>
+            <div class="modal-note"></div>
         </div>
     </div>
 
-    <!-- 引入LeanCloud SDK（用于数据统计，400份数据免费够用） -->
+    <!-- 引入LeanCloud SDK（数据收集功能） -->
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
+    
+    <!-- 微信JS-SDK（解决微信浏览器麦克风权限问题） -->
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    
     <script>
-        // 初始化LeanCloud（替换成你的应用密钥，从LeanCloud后台获取）
+        // 初始化LeanCloud
         AV.init({
-          appId: "你的AppID",
-          appKey: "你的AppKey",
-          serverURL: "你的服务器地址"
+          appId: "ekLgiETWmtKbV3Otf9RTYGfi-gzGzoHsz",
+          appKey: "FMrbuHo4xHZ7lsio1P6zY4HW",
+          serverURL: "https://eklgietw.lc-cn-n1-shared.com"
         });
 
         const homeView = document.getElementById('homeView');
         const detailView = document.getElementById('detailView');
+        const searchInput = document.getElementById('searchInput');
         const searchError = document.getElementById('searchError');
         const backBtn = document.querySelector('.back-btn');
         const selectModal = document.getElementById('selectModal');
         const detailSlider = document.getElementById('detailSlider');
         const indicators = document.querySelectorAll('.indicator');
-        const searchInput = document.getElementById('searchInput'); // 搜索栏元素
         
         let currentPage = 'home';
         let pageHistory = [];
         let currentSlideIndex = 0;
 
-        // 语音搜索核心函数（支持口音识别，扩大识别范围）
-        function startVoiceSearch() {
-            // 检查浏览器兼容性（Chrome内核浏览器支持最佳）
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert('您的浏览器不支持语音识别，请使用Chrome、Edge等现代浏览器尝试');
+        // 语音识别初始化
+        let recognition = null;
+        let isWeChat = /MicroMessenger/.test(navigator.userAgent); // 是否微信浏览器
+        let isSafari = /Safari/.test(navigator.userAgent) && !isWeChat; // 是否Safari浏览器（非微信）
+
+        // 核心：字符串相似度计算（适配发音不清/错别字）
+        function calculateSimilarity(str1, str2) {
+            const len1 = str1.length;
+            const len2 = str2.length;
+            const dp = Array(len1 + 1).fill().map(() => Array(len2 + 1).fill(0));
+            for (let i = 0; i <= len1; i++) dp[i][0] = i;
+            for (let j = 0; j <= len2; j++) dp[0][j] = j;
+            for (let i = 1; i <= len1; i++) {
+                for (let j = 1; j <= len2; j++) {
+                    const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+                    dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + cost);
+                }
+            }
+            return 1 - dp[len1][len2] / Math.max(len1, len2);
+        }
+
+        // 微信浏览器专用语音识别（解决权限问题）
+        function wechatVoiceRecognition() {
+            return new Promise((resolve, reject) => {
+                wx.startRecord({
+                    success: function(res) {
+                        wx.stopRecord({
+                            success: function(res) {
+                                wx.translateVoice({
+                                    localId: res.localId,
+                                    success: function(res) {
+                                        resolve(res.translateResult);
+                                    },
+                                    failure: function(res) {
+                                        reject('微信语音识别失败');
+                                    }
+                                });
+                            }
+                        });
+                    },
+                    cancel: function() {
+                        reject('用户取消录音');
+                    }
+                });
+            });
+        }
+
+        // 普通浏览器语音识别（含Safari适配）
+        function normalVoiceRecognition() {
+            return new Promise((resolve, reject) => {
+                // 优先使用webkitSpeechRecognition（解决Safari兼容问题）
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    reject('浏览器不支持语音识别功能');
+                    return;
+                }
+
+                recognition = new SpeechRecognition();
+                recognition.lang = 'zh-CN';
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.maxAlternatives = 3;
+                recognition.timeout = 10000;
+                recognition.noSpeechTimeout = 5000;
+
+                recognition.onresult = function(event) {
+                    let finalResult = '';
+                    for (let i = 0; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            finalResult = event.results[i][0].transcript.trim();
+                            break;
+                        }
+                    }
+                    resolve(finalResult);
+                };
+
+                recognition.onerror = function(event) {
+                    reject(`识别失败: ${event.error}`);
+                };
+
+                recognition.onend = function() {
+                    recognition = null;
+                };
+
+                recognition.start();
+            });
+        }
+
+        // 统一语音识别接口（根据浏览器类型自动选择）
+        async function startRecognition() {
+            searchInput.value = "正在聆听，请说出「充电宝」";
+            let result = '';
+            try {
+                if (isWeChat) {
+                    // 微信浏览器使用微信JS-SDK（解决权限问题）
+                    result = await wechatVoiceRecognition();
+                } else {
+                    // 其他浏览器（含Safari）使用原生API（添加webkit前缀解决兼容）
+                    result = await normalVoiceRecognition();
+                }
+                searchInput.value = `识别到: ${result}`;
+                return result;
+            } catch (error) {
+                searchInput.value = error.message;
+                setTimeout(() => {
+                    searchInput.value = "点击麦克风说出「充电宝」";
+                }, 2000);
+                return '';
+            }
+        }
+
+        // 语音搜索核心函数（适配所有浏览器）
+        async function startVoiceSearch() {
+            // 检查是否在微信浏览器中且未配置JS-SDK（解决权限问题）
+            if (isWeChat && !wx) {
+                alert('当前在微信浏览器中，但语音功能需要微信支持，请在公众号环境中使用');
                 return;
             }
 
-            // 初始化语音识别实例
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'zh-CN'; // 中文识别（适配大陆口音）
-            recognition.continuous = false; // 单次识别
-            recognition.interimResults = false; // 不返回中间结果
-            recognition.maxAlternatives = 3; // 保留3个识别候选（提升口音容错率）
+            // 检查是否在HTTPS环境（解决部分浏览器安全限制）
+            if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+                alert('为确保语音功能正常，请在HTTPS环境下访问');
+                return;
+            }
 
-            // 搜索栏显示"正在聆听..."提示
-            searchInput.value = "正在聆听，请说出「充电宝」";
+            const result = await startRecognition();
+            if (!result) return;
 
-            recognition.start();
+            // 关键词匹配逻辑（适配口音/发音不清）
+            const targetKeywords = ['充电宝', '电宝', '充宝', '充点宝', '充电宝儿', '电饱', '充饱', '创建宝', '创建包'];
+            const processedResult = result.replace(/\s+|[^\u4e00-\u9fa5]/g, '').toLowerCase();
+            const targetProcessed = targetKeywords.map(k => k.replace(/\s+/g, '').toLowerCase());
 
-            // 识别成功回调（扩大关键词匹配范围，兼容口音差异）
-            recognition.onresult = function(event) {
-                // 获取所有识别候选并转为小写，提升匹配灵活性
-                const results = Array.from(event.results[0])
-                    .map(item => item.transcript.trim().toLowerCase());
-                
-                // 扩大识别关键词库（兼容"充电宝"的不同发音/相近表述）
-                const targetKeywords = ['充电宝', '充电', '移动电源', '充电机', '便携电源', '充电宝儿', '创建宝', '创建包'];
-                // 检查是否匹配任意关键词
-                const isMatched = results.some(result => 
-                    targetKeywords.some(keyword => result.includes(keyword))
-                );
-
-                if (isMatched) {
-                    // 识别成功，搜索栏显示识别结果
-                    searchInput.value = `${results[0]}`;
-                    setTimeout(() => {
-                        handleSearch(); // 延迟0.5秒跳转，让用户看到识别结果
-                    }, 500);
-                } else {
-                    // 识别失败，搜索栏恢复初始提示
-                    searchInput.value = "点击麦克风语音搜索「充电宝」";
-                    // 显示用户实际说的内容，方便调整
-                    alert(`未识别到相关关键词\n您说的是："${results[0]}"\n请尝试清晰说出"充电宝"重试`);
+            let isMatch = false;
+            // 1. 精准匹配
+            for (const kw of targetProcessed) {
+                if (processedResult.includes(kw) || kw.includes(processedResult)) {
+                    isMatch = true;
+                    break;
                 }
-            };
-
-            // 识别错误处理（搜索栏恢复初始提示）
-            recognition.onerror = function(event) {
-                searchInput.value = "点击麦克风语音搜索「充电宝」";
-                const errorMsg = {
-                    'no-speech': '未检测到语音，请重试',
-                    'audio-capture': '请允许麦克风权限',
-                    'not-allowed': '麦克风权限被拒绝，请在浏览器设置中开启',
-                    'service-not-allowed': '语音服务不可用，请稍后重试'
-                }[event.error] || `识别失败：${event.error}`;
-                alert(errorMsg);
-            };
-
-            // 识别结束（无论成功失败，若未匹配关键词则恢复初始提示）
-            recognition.onend = function() {
-                if (searchInput.value !== `已识别：${results?.[0]}` && searchInput.value !== "正在跳转...") {
-                    searchInput.value = "点击麦克风语音搜索「充电宝」";
+            }
+            // 2. 模糊匹配（相似度≥70%）
+            if (!isMatch) {
+                for (const kw of targetProcessed) {
+                    const similarity = calculateSimilarity(processedResult, kw);
+                    if (similarity >= 0.7) {
+                        isMatch = true;
+                        break;
+                    }
                 }
-            };
+            }
+
+            if (isMatch) {
+                handleSearch();
+            } else {
+                searchInput.value = "未识别到关键词，请重试";
+                setTimeout(() => {
+                    searchInput.value = "点击麦克风说出「充电宝」";
+                }, 1500);
+            }
         }
 
         function handleSearch() {
             searchError.classList.remove('show');
-            // 搜索栏显示"正在跳转..."
-            searchInput.value = "识别成功，正在跳转...";
-            // 直接触发详情页跳转（仅支持语音搜索"充电宝"相关关键词）
             pageHistory.push(currentPage);
             currentPage = 'detail';
             homeView.classList.remove('active');
@@ -474,22 +564,17 @@
             }
         });
 
-        // 加入购物车并统计数据（自动上传到LeanCloud）
         function addToCart(type) {
             selectModal.style.display = 'none';
-            // 准备要统计的数据
+            alert(`充电宝 ${type} 已加入购物车！`);
+
+            // 数据收集
             const UserChoice = AV.Object.extend('UserChoices');
             const userChoice = new UserChoice();
-            userChoice.set('product', type); // 产品型号：M/N
-            userChoice.set('chooseTime', new Date()); // 选择时间
-            userChoice.set('deviceId', Math.random().toString(36).substr(2, 9)); // 匿名设备标识
-
-            // 发送数据到LeanCloud，成功/失败都不影响用户体验
-            userChoice.save().then(() => {
-                alert(`充电宝 ${type} 已加入购物车！\n新用户福利：免费赠送磁吸款充电器一个~`);
-            }, () => {
-                alert(`充电宝 ${type} 已加入购物车！\n新用户福利：免费赠送磁吸款充电器一个~`);
-            });
+            userChoice.set('productType', type);
+            userChoice.set('chooseTime', new Date());
+            userChoice.set('anonymousId', Math.random().toString(36).substr(2, 9));
+            userChoice.save();
         }
 
         function goBack() {
@@ -501,12 +586,23 @@
                 if (prevPage === 'home') {
                     homeView.classList.add('active');
                     backBtn.classList.remove('show');
-                    // 返回首页后，搜索栏恢复初始提示
-                    searchInput.value = "点击麦克风语音搜索「充电宝」";
+                    searchInput.value = "点击麦克风说出「充电宝」";
                 }
                 
                 currentPage = prevPage;
             }
+        }
+
+        // 微信JS-SDK初始化（解决权限问题）
+        if (isWeChat) {
+            wx.config({
+                debug: false,
+                appId: '', // 公众号appId（如无公众号可留空）
+                timestamp: 0, // 时间戳
+                nonceStr: '', // 随机字符串
+                signature: '', // 签名
+                jsApiList: ['startRecord', 'stopRecord', 'translateVoice'] // 微信语音识别所需API
+            });
         }
     </script>
 </body>
