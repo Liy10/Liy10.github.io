@@ -65,10 +65,18 @@
             background-color: #f9f9f9;
             cursor: not-allowed;
             text-align: left; /* 改为居左对齐 */
-            color: #333; /* 新增：设置输入框文字为黑色 */
+            color: #000; /* 优化为纯黑色，提高对比度 */
+            font-weight: 500; /* 新增：轻微加粗，增强可读性 */
         }
         .search-input:disabled {
-            color: #333; /* 新增：设置禁用状态下文字仍为黑色 */
+            color: #000; /* 优化为纯黑色，禁用状态保持一致 */
+            -webkit-text-fill-color: #000; /* 兼容部分浏览器禁用状态文字颜色 */
+            opacity: 1; /* 确保禁用状态不透明度100%，避免模糊 */
+        }
+        /* 新增：专门设置placeholder颜色为纯黑色 */
+        .search-input::placeholder {
+            color: #000;
+            opacity: 1; /* 清除默认占位符透明度，确保清晰 */
         }
         .voice-search-btn {
             padding: 12px;
@@ -438,7 +446,7 @@
                     } else {
                         searchInput.value = "未识别到相关产品，请重试";
                         setTimeout(() => {
-                            searchInput.value = "点击右侧麦克风说出「充电宝」";
+                            searchInput.value = "点击右侧麦克风说出「充电宝」"; // 保持目标文本一致
                         }, 1500);
                     }
                 }, 1000);
@@ -457,7 +465,7 @@
                 const errorMsg = errorMsgMap[event.error] || `识别异常：${event.error}`;
                 searchInput.value = errorMsg;
                 setTimeout(() => {
-                    searchInput.value = "点击右侧麦克风说出「充电宝」";
+                    searchInput.value = "点击右侧麦克风说出「充电宝」"; // 保持目标文本一致
                 }, 2000);
             };
 
@@ -466,7 +474,7 @@
                 if (searchInput.value === "已开启麦克风，可说「充电宝/电宝/充宝」") {
                     searchInput.value = "未检测到语音，请重试";
                     setTimeout(() => {
-                        searchInput.value = "点击右侧麦克风说出「充电宝」";
+                        searchInput.value = "点击右侧麦克风说出「充电宝」"; // 保持目标文本一致
                     }, 1500);
                 }
             };
@@ -545,7 +553,7 @@
                 if (prevPage === 'home') {
                     homeView.classList.add('active');
                     backBtn.classList.remove('show');
-                    searchInput.value = "点击右侧麦克风说出「充电宝」";
+                    searchInput.value = "点击右侧麦克风说出「充电宝」"; // 保持目标文本一致
                 }
                 
                 currentPage = prevPage;
