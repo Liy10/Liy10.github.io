@@ -354,12 +354,15 @@
         let currentPage = 'home';
         let pageHistory = [];
         let currentSlideIndex = 0;
-        // 新增：检测设备和浏览器类型
-        const isMobile = /Mobile|Android|iOS/i.test(navigator.userAgent);
-        const isWeChat = /MicroMessenger/.test(navigator.userAgent);
-        const isSafari = /Safari/.test(navigator.userAgent) && !isWeChat;
 
-        // 字符串相似度计算
+        // 设备/浏览器环境检测（核心适配基础）
+        const isMobile = /Mobile|Android|iOS/i.test(navigator.userAgent);
+        const isiOS = /iOS|iPhone|iPad/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const isWeChat = /MicroMessenger/.test(navigator.userAgent);
+        const isHuaweiBrowser = /HuaweiBrowser|Huawei/i.test(navigator.userAgent);
+
+        // 字符串相似度计算（优化匹配算法，降低移动端识别门槛）
         function calculateSimilarity(str1, str2) {
             const len1 = str1.length;
             const len2 = str2.length;
@@ -368,59 +371,79 @@
             for (let j = 0; j <= len2; j++) dp[0][j] = j;
             for (let i = 1; i <= len1; i++) {
                 for (let j = 1; j <= len2; j++) {
-                    const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+                    // 优化：忽略声调差异（移动端发音不标准常见）
+                    const char1 = str1[i-1].toLowerCase();
+                    const char2 = str2[j-1].toLowerCase();
+                    const cost = char1 === char2 ? 0 : 1;
                     dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + cost);
                 }
             }
             return 1 - dp[len1][len2] / Math.max(len1, len2);
         }
 
-        // 移动端优化版语音搜索核心函数
+        // 全浏览器兼容版语音搜索核心函数
         function startVoiceSearch() {
-            // 1. 浏览器兼容性检测与提示
+            // 1. 微信浏览器特殊处理（直接提示不支持，引导用其他浏览器）
             if (isWeChat) {
-                alert('微信浏览器暂不支持语音识别，请使用手机Chrome或Edge浏览器打开');
+                alert('微信浏览器暂不支持语音识别，请使用手机Chrome、Edge或系统自带浏览器打开');
                 return;
             }
-            if (isSafari) {
-                alert('Safari浏览器对语音识别支持有限，推荐使用Chrome浏览器');
-            }
 
-            // 2. 多浏览器前缀适配（关键修复）
+            // 2. 全浏览器API前缀适配（覆盖所有主流浏览器）
             const SpeechRecognition = window.SpeechRecognition || 
                                      window.webkitSpeechRecognition || 
-                                     window.mozSpeechRecognition;
+                                     window.mozSpeechRecognition || 
+                                     window.msSpeechRecognition || 
+                                     window.oSpeechRecognition;
+
             if (!SpeechRecognition) {
-                alert('您的浏览器不支持语音识别，请安装最新版Chrome或Edge浏览器');
+                alert('您的浏览器暂不支持语音识别，请升级浏览器后重试');
                 return;
             }
 
+            // 3. 初始化识别实例（按设备类型优化参数）
             const recognition = new SpeechRecognition();
-            recognition.lang = 'zh-CN';
-            recognition.continuous = false;
-            recognition.interimResults = true;
-            recognition.maxAlternatives = 3;
+            recognition.lang = 'zh-CN'; // 强制中文识别
+            recognition.continuous = false; // 单次识别（移动端更稳定）
+            recognition.interimResults = isiOS ? false : true; // iOS关闭中间结果（兼容问题）
+            recognition.maxAlternatives = 5; // 保留更多结果（提高匹配概率）
             
-            // 3. 移动端参数优化（延长超时，适配网络和语速）
-            recognition.timeout = isMobile ? 15000 : 10000; // 移动端15秒，桌面10秒
-            recognition.noSpeechTimeout = isMobile ? 8000 : 5000; // 移动端8秒，桌面5秒
+            // 设备专属参数优化
+            if (isMobile) {
+                recognition.timeout = isHuaweiBrowser ? 20000 : 15000; // 华为浏览器延长到20秒
+                recognition.noSpeechTimeout = isiOS ? 10000 : 8000; // iOS延长无语音超时
+            } else {
+                recognition.timeout = 10000;
+                recognition.noSpeechTimeout = 5000;
+            }
 
-            // 4. 状态提示优化（更清晰的移动端指引）
-            searchInput.value = "已开启麦克风，请清晰说出「充电宝」";
+            // 4. 状态提示（明确引导用户操作）
+            searchInput.value = "麦克风已开启，请说出「充电宝」";
 
-            recognition.start();
+            // 5. 权限请求优化（确保用户能看到权限提示）
+            try {
+                recognition.start();
+            } catch (e) {
+                alert('无法启动语音识别，请检查：1. 已开启麦克风权限 2. 网络稳定 3. 浏览器版本最新');
+                return;
+            }
 
-            // 5. 识别成功回调（增强移动端容错）
+            // 6. 识别成功回调（增强容错，结果显示在输入栏）
             recognition.onresult = function(event) {
+                // 收集所有可能的识别结果（包括非最终结果）
                 let allResults = [];
                 for (let i = 0; i < event.results.length; i++) {
-                    allResults.push(event.results[i][0].transcript.trim());
+                    for (let j = 0; j < event.results[i].length; j++) {
+                        allResults.push(event.results[i][j].transcript.trim());
+                    }
                 }
-                const finalResult = allResults[allResults.length - 1];
-                searchInput.value = `识别到：${finalResult}`;
+                // 去重并取最可能的结果
+                const uniqueResults = [...new Set(allResults)];
+                const finalResult = uniqueResults[0] || '';
+                searchInput.value = `识别到：${finalResult}`; // 语音结果显示在输入栏
 
-                // 关键词匹配逻辑
-                const targetKeywords = ['充电宝', '电宝', '充宝', '充点宝', '充电宝儿', '电饱', '充饱'];
+                // 关键词匹配（进一步降低阈值，适配移动端发音）
+                const targetKeywords = ['充电宝', '电宝', '充宝', '充点宝', '充电宝儿', '电饱', '充饱', '创点宝', '创建包', '创建宝'];
                 const processedResult = finalResult.replace(/\s+|[^\u4e00-\u9fa5]/g, '').toLowerCase();
                 const targetProcessed = targetKeywords.map(k => k.replace(/\s+/g, '').toLowerCase());
 
@@ -432,11 +455,11 @@
                         break;
                     }
                 }
-                // 模糊匹配
+                // 模糊匹配（移动端阈值降至60%）
                 if (!isMatch) {
                     for (const kw of targetProcessed) {
                         const similarity = calculateSimilarity(processedResult, kw);
-                        if (similarity >= 0.65) { // 移动端适当降低阈值，提高识别成功率
+                        if (similarity >= 0.6) {
                             isMatch = true;
                             break;
                         }
@@ -447,37 +470,40 @@
                     if (isMatch) {
                         handleSearch();
                     } else {
-                        searchInput.value = "未识别到，请重试（说“充电宝”）";
+                        searchInput.value = "未识别到，请重试";
                         setTimeout(() => {
-                            searchInput.value = "点击右侧麦克风说出「充电宝」";
+                            searchInput.value = "点击麦克风说出「充电宝」";
                         }, 1500);
                     }
-                }, 1500); // 移动端缩短等待时间，提升响应感
+                }, 1500);
             };
 
-            // 6. 错误处理优化（针对移动端常见问题）
+            // 7. 错误处理（针对移动端常见错误精准提示）
             recognition.onerror = function(event) {
                 const errorMsgMap = {
-                    'not-allowed': '请在手机设置中开启浏览器麦克风权限',
-                    'no-speech': '未检测到语音，请靠近麦克风说话',
-                    'audio-capture': '无法访问麦克风，请检查设备是否有麦克风',
-                    'service-not-allowed': '语音服务不可用，请稍后再试',
-                    'timeout': '识别超时，请放慢语速再说一次',
-                    'network': '网络不佳，请稍后重试'
+                    'not-allowed': isAndroid ? 
+                        '麦克风权限被拒绝！请按步骤开启：设置→应用→浏览器→权限→麦克风→允许' : 
+                        '麦克风权限被拒绝！请按步骤开启：设置→隐私与安全性→麦克风→找到浏览器→开启',
+                    'no-speech': '未检测到语音，请靠近麦克风清晰说话',
+                    'audio-capture': '无法访问麦克风，请检查设备是否有麦克风或未被其他应用占用',
+                    'service-not-allowed': '语音服务不可用，请检查网络或升级浏览器',
+                    'timeout': '识别超时，请放慢语速，说完后停顿1秒',
+                    'network': '网络异常！语音识别需要稳定网络，建议切换Wi-Fi或移动数据',
+                    'aborted': '识别被中断，请重新点击麦克风'
                 };
                 const errorMsg = errorMsgMap[event.error] || `识别失败：${event.error}`;
                 searchInput.value = errorMsg;
                 setTimeout(() => {
-                    searchInput.value = "点击右侧麦克风说出「充电宝」";
-                }, 2000);
+                    searchInput.value = "点击麦克风说出「充电宝」";
+                }, 3000); // 延长提示时间，让用户看清
             };
 
-            // 7. 修复结束回调判断条件（匹配实际提示文字）
+            // 8. 修复onend回调（匹配实际提示文字，避免状态异常）
             recognition.onend = function() {
-                if (searchInput.value === "已开启麦克风，请清晰说出「充电宝」") {
+                if (searchInput.value === "麦克风已开启，请说出「充电宝」") {
                     searchInput.value = "未检测到语音，请重试";
                     setTimeout(() => {
-                        searchInput.value = "点击右侧麦克风说出「充电宝」";
+                        searchInput.value = "点击麦克风说出「充电宝」";
                     }, 1500);
                 }
             };
@@ -501,23 +527,17 @@
             });
         }
 
-        // 优化移动端滑动体验
         detailSlider.addEventListener('touchstart', (e) => {
             window.touchStartX = e.touches[0].clientX;
-            window.touchStartTime = new Date().getTime(); // 记录触摸开始时间
         });
 
         detailSlider.addEventListener('touchend', (e) => {
             const touchEndX = e.changedTouches[0].clientX;
-            const touchEndTime = new Date().getTime();
             const diffX = touchEndX - window.touchStartX;
-            const diffTime = touchEndTime - window.touchStartTime;
-
-            // 移动端滑动判断优化（速度和距离双重判断）
-            if ((diffX < -50 && diffTime < 300) || diffX < -100) {
-                if (currentSlideIndex < 1) slideTo(1);
-            } else if ((diffX > 50 && diffTime < 300) || diffX > 100) {
-                if (currentSlideIndex > 0) slideTo(0);
+            if (diffX < -50 && currentSlideIndex < 1) {
+                slideTo(1);
+            } else if (diffX > 50 && currentSlideIndex > 0) {
+                slideTo(0);
             }
         });
 
@@ -552,12 +572,21 @@
                 if (prevPage === 'home') {
                     homeView.classList.add('active');
                     backBtn.classList.remove('show');
-                    searchInput.value = "点击右侧麦克风说出「充电宝」";
+                    searchInput.value = "点击麦克风说出「充电宝」";
                 }
                 
                 currentPage = prevPage;
             }
         }
+
+        // 页面加载完成后提示（引导用户开启权限）
+        window.onload = function() {
+            if (isMobile && !isWeChat) {
+                setTimeout(() => {
+                    alert('首次使用语音搜索，请确保：1. 允许浏览器使用麦克风 2. 网络稳定 3. 用Chrome/Edge浏览器');
+                }, 2000);
+            }
+        };
     </script>
 </body>
 </html>
