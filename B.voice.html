@@ -64,7 +64,7 @@
             font-size: 14px; /* 原16px，缩小一号 */
             background-color: #f9f9f9;
             cursor: not-allowed;
-            text-align: center;
+            text-align: left; /* 改为居左对齐 */
         }
         .search-input:disabled {
             color: #666;
@@ -389,7 +389,7 @@
             recognition.timeout = 10000; // 延长超时到10秒，适配语速慢
             recognition.noSpeechTimeout = 5000; // 无语音超时5秒，避免误判
 
-            // 提示优化：告知可识别的灵活词汇（字体已通过CSS缩小）
+            // 提示优化：告知可识别的灵活词汇（字体已通过CSS缩小且居左）
             searchInput.value = "已开启麦克风，请说出「充电宝」";
 
             recognition.start();
