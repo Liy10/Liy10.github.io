@@ -63,6 +63,27 @@
             border-radius: 24px;
             font-size: 14px; /* 原16px，缩小一号 */
         }
+        /* 核心修改：设置占位符为纯黑色，兼容所有浏览器 */
+        .search-input::placeholder {
+            color: #000; /* 纯黑色，提高对比度 */
+            opacity: 1; /* 清除默认半透明效果 */
+        }
+        .search-input::-webkit-input-placeholder { /* Chrome/Safari/Edge */
+            color: #000;
+            opacity: 1;
+        }
+        .search-input::-moz-placeholder { /* Firefox */
+            color: #000;
+            opacity: 1;
+        }
+        .search-input:-ms-input-placeholder { /* IE10+ */
+            color: #000;
+            opacity: 1;
+        }
+        .search-input:-moz-placeholder { /* 老版Firefox */
+            color: #000;
+            opacity: 1;
+        }
         .search-btn {
             padding: 12px 20px;
             background-color: #224b8f; /* 琉璃绀色主色 */
