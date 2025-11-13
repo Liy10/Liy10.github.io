@@ -8,14 +8,15 @@
         * {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
             box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
+        
         body {
             background-color: #f5f5f5;
             padding-bottom: 80px;
-            position: relative;
         }
+        
         .view {
             display: none;
             width: 100%;
@@ -24,10 +25,11 @@
             padding: 20px;
             min-height: 100vh;
         }
+        
         .view.active {
             display: block;
         }
-
+        
         .back-btn {
             position: absolute;
             top: 20px;
@@ -40,15 +42,17 @@
             display: none;
             z-index: 10;
         }
+        
         .back-btn.show {
             display: block;
         }
 
+        /* 首页样式 */
         .home-view {
             text-align: center;
             padding-top: 60px;
-            position: relative;
         }
+        
         .search-box {
             display: flex;
             align-items: center;
@@ -56,49 +60,48 @@
             gap: 8px;
             margin-top: 20px;
         }
+        
         .search-input {
             width: 70%;
             padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 24px;
-            font-size: 14px; /* 原16px，缩小一号 */
-            background-color: #f9f9f9;
-            cursor: not-allowed;
-            text-align: left; /* 改为居左对齐 */
-            color: #000; /* 优化为纯黑色，提高对比度 */
-            font-weight: 500; /* 新增：轻微加粗，增强可读性 */
+            font-size: 14px;
+            background-color: #fff;
         }
-        .search-input:disabled {
-            color: #000; /* 优化为纯黑色，禁用状态保持一致 */
-            -webkit-text-fill-color: #000; /* 兼容部分浏览器禁用状态文字颜色 */
-            opacity: 1; /* 确保禁用状态不透明度100%，避免模糊 */
-        }
-        /* 新增：专门设置placeholder颜色为纯黑色 */
-        .search-input::placeholder {
-            color: #000;
-            opacity: 1; /* 清除默认占位符透明度，确保清晰 */
-        }
-        .voice-search-btn {
+        
+        .search-btn {
             padding: 12px;
-            background-color: #224b8f; /* 琉璃绀色主色 */
+            background-color: #224b8f;
             color: white;
             border: none;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 18px;
-            transition: all 0.3s;
+            font-size: 16px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .voice-search-btn:hover {
-            background-color: #1a3b6d; /* 深色调hover效果 */
+        
+        .search-btn.recording {
+            background-color: #ff4d4f;
+            animation: pulse 1.5s infinite;
         }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
         .search-error {
             color: #ff4d4f;
             margin-top: 15px;
             display: none;
         }
-        .search-error.show {
-            display: block;
-        }
+        
         .home-poster {
             margin-top: 30px;
             background-color: #fff;
@@ -107,458 +110,893 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             text-align: left;
         }
+        
         .poster-img {
             width: 100%;
-            margin: 15px 0 0;
+            margin: 20px 0 0;
             display: block;
             border-radius: 8px;
         }
+        
         .poster-title {
-            color: #224b8f; /* 琉璃绀色主色 */
+            color: #224b8f;
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 8px;
         }
+        
         .poster-desc {
             color: #666;
             line-height: 1.6;
         }
-        .poster-desc-large {
-            font-size: 16px; /* 原14px增大一号 */
-        }
+        
         .poster-highlight {
-            color: #224b8f; /* 琉璃绀色主色 */
+            color: #224b8f;
             font-weight: bold;
         }
 
+        /* 产品详情页 */
         .detail-view {
             padding-top: 60px;
             position: relative;
-            overflow: hidden;
         }
+        
+        .detail-container {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-height: calc(100vh - 140px);
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 20px;
+        }
+        
+        .detail-img-wrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            min-height: 40vh;
+        }
+        
         .detail-slider {
             display: flex;
             width: 200%;
+            height: 100%;
             transition: transform 0.3s ease;
             touch-action: pan-y;
         }
+        
         .detail-slide {
-            width: 50%;
-            padding: 0 10px;
-            flex-shrink: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        .product-item {
+        
+        .detail-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .detail-info {
+            padding: 15px;
+        }
+        
+        .detail-title {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .detail-price {
+            font-size: 18px;
+            color: #224b8f;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .detail-spec {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+        
+        .detail-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            gap: 10px;
+        }
+        
+        .indicator-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .indicator-img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .indicator-img.active {
+            border: 2px solid #224b8f;
+        }
+        
+        .detail-add-cart {
+            padding: 10px 20px;
+            background-color: #224b8f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            white-space: nowrap;
+            display: none;
+        }
+        
+        .detail-add-cart.show {
+            display: block;
+        }
+
+        /* 加入购物车页 */
+        .compare-view {
+            padding-top: 60px;
+            text-align: center;
+        }
+        
+        .compare-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .compare-item {
+            width: 45%;
             background-color: #fff;
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .detail-img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        .detail-title {
-            font-size: 20px;
-            margin-bottom: 8px;
-        }
-        .detail-price {
-            font-size: 18px;
-            color: #224b8f; /* 琉璃绀色主色 */
-            margin-bottom: 15px;
-        }
-        .detail-spec {
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 6px;
-        }
-        .spec-item {
-            margin: 6px 0;
-            font-size: 14px;
-        }
-        .slide-indicators {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
+            flex-direction: column;
         }
-        .indicator {
-            padding: 6px 12px;
-            font-size: 14px;
-            color: #666;
+        
+        .compare-img {
+            width: 100%;
+            height: 140px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-bottom: 10px;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s;
         }
-        .indicator.active {
-            color: #224b8f; /* 琉璃绀色主色 */
-            border-bottom: 2px solid #224b8f; /* 琉璃绀色主色 */
+        
+        .compare-title {
+            font-size: 18px;
+            margin-bottom: 5px;
+            text-align: left;
         }
-        .add-cart {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 600px;
+        
+        .compare-price {
+            font-size: 16px;
+            color: #224b8f;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+        
+        .compare-spec {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+            text-align: left;
+            flex-grow: 1;
+        }
+        
+        .select-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0 20px 30px;
+        }
+        
+        .style-select {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .style-label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .style-radio-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .radio-label {
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .quantity-select {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .quantity-label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+        
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 0;
+            font-size: 16px;
+            cursor: not-allowed;
+            color: #999;
+        }
+        
+        .quantity-btn:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+        
+        .quantity-btn:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .quantity-input {
+            width: 50px;
+            height: 30px;
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
+            border-left: none;
+            border-right: none;
+            text-align: center;
+            font-size: 16px;
+        }
+        
+        .compare-add-cart {
+            padding: 12px;
+            background-color: #224b8f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* 问卷页面 */
+        .survey-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 20px 0 30px;
+        }
+        
+        .survey-title {
+            font-size: 22px;
+            color: #224b8f;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .survey-desc {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .survey-item {
+            margin-bottom: 20px;
+        }
+        
+        .survey-question {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .rating-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .gender-group {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .rating-group label,
+        .gender-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+        
+        .survey-item input[type="text"],
+        .survey-item input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .survey-submit-btn {
+            width: 100%;
             padding: 14px;
-            background-color: #224b8f; /* 琉璃绀色主色 */
+            background-color: #224b8f;
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 18px;
             cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 10px;
         }
 
-        .select-modal {
+        /* 图片放大效果 */
+        .image-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
+            background-color: rgba(0,0,0,0.9);
             display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
         }
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            width: 80%;
-            max-width: 400px;
-            text-align: center;
-        }
-        .modal-title {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .modal-desc {
-            font-size: 16px;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-        .modal-btns {
+        
+        .image-modal.active {
             display: flex;
-            gap: 10px;
         }
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            background-color: #224b8f; /* 琉璃绀色主色 */
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
+        
+        .modal-img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
         }
-        .modal-btn:hover {
-            background-color: #1a3b6d; /* 琉璃绀色深色调（hover效果） */
-        }
-        .modal-note {
-            font-size: 12px;
-            color: #999;
-            margin-top: 15px;
+
+        /* 语音识别状态提示 */
+        .voice-status {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+            min-height: 20px;
         }
     </style>
 </head>
 <body>
     <button class="back-btn" onclick="goBack()">← 返回</button>
 
+    <!-- 图片放大模态框 -->
+    <div class="image-modal" id="imageModal" onclick="closeModal()">
+        <img class="modal-img" id="modalImg" src="" alt="放大图片">
+    </div>
+
+    <!-- 首页 -->
     <div class="view home-view active" id="homeView">
         <h2>校园文创线上商城</h2>
         <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="点击右侧麦克风说出「充电宝」" disabled>
-            <button class="voice-search-btn" onclick="startVoiceSearch()">🎤</button>
+            <input type="text" class="search-input" id="searchInput" placeholder="请点击麦克风进行语音搜索" readonly>
+            <button class="search-btn" id="voiceSearchBtn" onclick="toggleVoiceSearch()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+            </button>
         </div>
+        <div class="voice-status" id="voiceStatus"></div>
         <div class="search-error" id="searchError">没有找到相关产品</div>
         <div class="home-poster">
             <div class="poster-title">📢📢📢 让校园文创更懂你！</div>
             <div class="poster-desc">
-                <div class="poster-desc-large">
-                    文创店新网页上线测试中～<br>
-                    浏览产品展示页并留下你的建议即可参与抽奖<br>
-                    奖品：<span class="poster-highlight">30个文创充电宝</span>，数量有限先到先得！
-                </div>
+                文创店新网页上线测试中～<br>
+                浏览产品展示页并留下你的建议即可参与抽奖<br>
+                奖品：<span class="poster-highlight">30个文创充电宝</span>，数量有限先到先得！
             </div>
-            <!-- 海报图片移到文字下方 -->
             <img src="https://youke1.picui.cn/s1/2025/11/12/6914445984c13.png" class="poster-img" alt="线上店活动海报">
         </div>
     </div>
 
+    <!-- 产品详情页 -->
     <div class="view detail-view" id="detailView">
-        <div class="detail-slider" id="detailSlider">
-            <div class="detail-slide">
-                <div class="product-item">
-                    <img src="https://youke1.picui.cn/s1/2025/11/10/69119464e3bdc.png" class="detail-img">
-                    <div class="detail-title">充电宝 M</div>
-                    <div class="detail-price">¥99</div>
-                    <div class="detail-spec">
-                        <div class="spec-item"><strong>充电速度评级：</strong>3级（等级越高，充电速度越快）</div>
-                        <div class="spec-item"><strong>其他功能特性：</strong>电池容量10000 mAh、单输入单输出接口</div>
-                        <div class="spec-item"><strong>颜色款式：</strong>多种颜色（白、黑、蓝、粉等）</div>
-                        <div class="spec-item"><strong>其他外观特性：</strong>轻薄小巧、流线型设计、颜值高</div>
+        <div class="detail-container">
+            <!-- 产品图片区域 -->
+            <div class="detail-img-wrapper">
+                <div class="detail-slider" id="detailSlider">
+                    <div class="detail-slide">
+                        <img src="https://youke1.picui.cn/s1/2025/11/10/69119464e3bdc.png" class="detail-img" alt="充电宝M" onclick="showModal(this.src)">
+                    </div>
+                    <div class="detail-slide">
+                        <img src="https://youke1.picui.cn/s1/2025/11/12/691450b372874.png" class="detail-img" alt="充电宝N" onclick="showModal(this.src)">
                     </div>
                 </div>
             </div>
-            <div class="detail-slide">
-                <div class="product-item">
-                    <img src="https://youke1.picui.cn/s1/2025/11/12/691450b372874.png" class="detail-img">
-                    <div class="detail-title">充电宝 N</div>
-                    <div class="detail-price">¥99</div>
-                    <div class="detail-spec">
-                        <div class="spec-item"><strong>充电速度评级：</strong>5级（等级越高，充电速度越快）</div>
-                        <div class="spec-item"><strong>其他功能特性：</strong>电池容量20000 mAh、单输入双输出接口</div>
-                        <div class="spec-item"><strong>颜色款式：</strong>仅黑色</div>
-                        <div class="spec-item"><strong>其他外观特性：</strong>简约方正设计、颜值适中</div>
-                    </div>
+            <!-- 产品信息区域 -->
+            <div class="detail-info">
+                <div class="detail-title" id="detailProductTitle">充电宝 M</div>
+                <div class="detail-price" id="detailProductPrice">¥99</div>
+                <div class="detail-spec" id="detailProductSpec">
+                    充电速度评级：3级（等级越高，充电速度越快）<br>
+                    其他功能特性：电池容量10000 mAh、单输入单输出接口<br>
+                    颜色款式：多种颜色（白、黑、蓝、粉等）<br>
+                    其他外观特性：轻薄小巧、流线型设计、颜值高
+                </div>
+            </div>
+            <!-- 底部控制栏 -->
+            <div class="detail-controls">
+                <div class="indicator-container">
+                    <img class="indicator-img active" data-index="0" onclick="slideTo(0)" src="https://youke1.picui.cn/s1/2025/11/10/69119464e3bdc.png" alt="充电宝M缩略图">
+                    <img class="indicator-img" data-index="1" onclick="slideTo(1)" src="https://youke1.picui.cn/s1/2025/11/12/691450b372874.png" alt="充电宝N缩略图">
+                </div>
+                <button class="detail-add-cart" id="detailAddCartBtn" onclick="goToCompareView()">加入购物车</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加入购物车页 -->
+    <div class="view compare-view" id="compareView">
+        <div class="compare-container">
+            <div class="compare-item">
+                <img src="https://youke1.picui.cn/s1/2025/11/10/69119464e3bdc.png" class="compare-img" onclick="showModal(this.src)">
+                <div class="compare-title">充电宝 M</div>
+                <div class="compare-price">¥99</div>
+                <div class="compare-spec">
+                    充电速度评级：3级<br>
+                    电池容量：10000 mAh<br>
+                    接口：单输入单输出<br>
+                    颜色：多种颜色可选<br>
+                    特点：轻薄小巧、流线型设计
+                </div>
+            </div>
+            <div class="compare-item">
+                <img src="https://youke1.picui.cn/s1/2025/11/12/691450b372874.png" class="compare-img" onclick="showModal(this.src)">
+                <div class="compare-title">充电宝 N</div>
+                <div class="compare-price">¥99</div>
+                <div class="compare-spec">
+                    充电速度评级：5级<br>
+                    电池容量：20000 mAh<br>
+                    接口：单输入双输出<br>
+                    颜色：仅黑色<br>
+                    特点：简约方正设计、大容量
                 </div>
             </div>
         </div>
-        
-        <div class="slide-indicators">
-            <div class="indicator active" data-index="0" onclick="slideTo(0)">第一款</div>
-            <div class="indicator" data-index="1" onclick="slideTo(1)">第二款</div>
-        </div>
-        
-        <button class="add-cart" onclick="showSelectModal()">加入购物车</button>
-    </div>
-
-    <div class="select-modal" id="selectModal">
-        <div class="modal-content">
-            <div class="modal-title">请选择您心仪的充电宝</div>
-            <div class="modal-btns">
-                <button class="modal-btn" onclick="addToCart('M')">充电宝 M</button>
-                <button class="modal-btn" onclick="addToCart('N')">充电宝 N</button>
+        <div class="select-container">
+            <!-- 款式选择 -->
+            <div class="style-select">
+                <span class="style-label">款式：</span>
+                <div class="style-radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="product" value="M" checked> 充电宝 M
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="product" value="N"> 充电宝 N
+                    </label>
+                </div>
             </div>
-            <div class="modal-note"></div>
+            <!-- 数量选择 -->
+            <div class="quantity-select">
+                <span class="quantity-label">数量：</span>
+                <div class="quantity-control">
+                    <button class="quantity-btn" disabled>-</button>
+                    <input type="number" class="quantity-input" value="1" min="1" max="1" readonly>
+                    <button class="quantity-btn" disabled>+</button>
+                </div>
+            </div>
+            <button class="compare-add-cart" onclick="compareAddToCart()">加入购物车</button>
         </div>
     </div>
 
-    <!-- 引入LeanCloud SDK（数据收集功能） -->
+    <!-- 问卷第一页 -->
+    <div class="view survey1-view" id="survey1View">
+        <div class="survey-container">
+            <div class="survey-title">问卷调研</div>
+            <div class="survey-desc">
+                为了更好地了解校园用户的需求，请填写下方信息，这将帮助我们完善线上商城并设计出更符合大家期待的文创产品。<br>
+                我们承诺：所有信息仅用于产品设计研究，严格保密。
+            </div>
+            <form id="survey1Form">
+                <div class="survey-item">
+                    <div class="survey-question">1. 请您对刚才的网站设计与搜索体验进行评价。</div>
+                     <div class="question-instruction">（1=一点都不好，7=非常好）</div>
+                    <div class="rating-group">
+                        <label><input type="radio" name="websiteRating" value="1" required> 1</label>
+                        <label><input type="radio" name="websiteRating" value="2"> 2</label>
+                        <label><input type="radio" name="websiteRating" value="3"> 3</label>
+                        <label><input type="radio" name="websiteRating" value="4"> 4</label>
+                        <label><input type="radio" name="websiteRating" value="5"> 5</label>
+                        <label><input type="radio" name="websiteRating" value="6"> 6</label>
+                        <label><input type="radio" name="websiteRating" value="7"> 7</label>
+                    </div>
+                </div>
+                <div class="survey-item">
+                    <div class="survey-question">2. 您平时使用充电宝的频率？</div> 
+                     <div class="question-instruction">（1=一点都不频繁，7=非常频繁）</div>
+                    <div class="rating-group">
+                        <label><input type="radio" name="usageFrequency" value="1" required> 1</label>
+                        <label><input type="radio" name="usageFrequency" value="2"> 2</label>
+                        <label><input type="radio" name="usageFrequency" value="3"> 3</label>
+                        <label><input type="radio" name="usageFrequency" value="4"> 4</label>
+                        <label><input type="radio" name="usageFrequency" value="5"> 5</label>
+                        <label><input type="radio" name="usageFrequency" value="6"> 6</label>
+                        <label><input type="radio" name="usageFrequency" value="7"> 7</label>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 问卷第二页 -->
+    <div class="view survey2-view" id="survey2View">
+        <div class="survey-container">
+            <div class="survey-title">基础信息收集</div>
+            <div class="survey-desc">
+                本页为后续礼品发放收集基本信息，我们将严格保密您的个人信息。
+            </div>
+            <form id="survey2Form">
+                <div class="survey-item">
+                    <div class="survey-question">1. 您的性别：</div>
+                    <div class="gender-group">
+                        <label><input type="radio" name="gender" value="男" required> 男</label>
+                        <label><input type="radio" name="gender" value="女"> 女</label>
+                    </div>
+                </div>
+                <div class="survey-item">
+                    <div class="survey-question">2. 您的年龄：</div>
+                    <input type="number" name="age" min="10" max="100" required placeholder="请输入年龄">
+                </div>
+                <div class="survey-item">
+                    <div class="survey-question">3. 手机号后四位：</div>
+                    <input type="text" name="phoneLast4" pattern="\d{4}" required placeholder="请输入手机号后四位">
+                </div>
+                <button type="submit" class="survey-submit-btn">提交</button>
+            </form>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <script>
-        // 初始化LeanCloud（已填入你的新AppID和AppKey）
+        // 初始化LeanCloud
         AV.init({
-          appId: "ekLgiETWmtKbV3Otf9RTYGfi-gzGzoHsz",
-          appKey: "FMrbuHo4xHZ7lsio1P6zY4HW",
-          serverURL: "https://eklgietw.lc-cn-n1-shared.com"
+          appId: "BRIeJxj8NmBJ5kJ8J7y81US1-gzGzoHsz",
+          appKey: "Y6B011SA2WjsGg4uRBZ1bktj",
+          serverURL: "https://briejxj8.lc-cn-n1-shared.com"
         });
 
-        const homeView = document.getElementById('homeView');
-        const detailView = document.getElementById('detailView');
+        // 页面元素引用
+        const pageElements = {
+            home: document.getElementById('homeView'),
+            detail: document.getElementById('detailView'),
+            compare: document.getElementById('compareView'),
+            survey1: document.getElementById('survey1View'),
+            survey2: document.getElementById('survey2View')
+        };
         const searchInput = document.getElementById('searchInput');
         const searchError = document.getElementById('searchError');
+        const voiceSearchBtn = document.getElementById('voiceSearchBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
         const backBtn = document.querySelector('.back-btn');
-        const selectModal = document.getElementById('selectModal');
         const detailSlider = document.getElementById('detailSlider');
-        const indicators = document.querySelectorAll('.indicator');
-        
+        const indicators = document.querySelectorAll('.indicator-img');
+        const detailTitle = document.getElementById('detailProductTitle');
+        const detailSpec = document.getElementById('detailProductSpec');
+        const detailAddCartBtn = document.getElementById('detailAddCartBtn');
+        const imageModal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImg');
+
+        // 产品数据
+        const productData = [
+            {
+                title: '充电宝 M',
+                spec: '充电速度评级：3级（等级越高，充电速度越快）<br>其他功能特性：电池容量10000 mAh、单输入单输出接口<br>颜色款式：多种颜色（白、黑、蓝、粉等）<br>其他外观特性：轻薄小巧、流线型设计、颜值高'
+            },
+            {
+                title: '充电宝 N',
+                spec: '充电速度评级：5级（等级越高，充电速度越快）<br>其他功能特性：电池容量20000 mAh、单输入双输出接口<br>颜色款式：仅黑色<br>其他外观特性：简约方正设计、颜值适中'
+            }
+        ];
+
+        // 全局变量
         let currentPage = 'home';
         let pageHistory = [];
         let currentSlideIndex = 0;
+        let surveyData = {};
+        let recognition = null;
+        let isListening = false;
+        
+        // 语音识别关键词白名单
+        const keywordWhitelist = ['充电宝', '充电', '电宝', '移动电源', '电池', '充电器'];
 
-        // 核心：字符串相似度计算（适配发音不清/错别字）
-        function calculateSimilarity(str1, str2) {
-            const len1 = str1.length;
-            const len2 = str2.length;
-            const dp = Array(len1 + 1).fill().map(() => Array(len2 + 1).fill(0));
-            for (let i = 0; i <= len1; i++) dp[i][0] = i;
-            for (let j = 0; j <= len2; j++) dp[0][j] = j;
-            for (let i = 1; i <= len1; i++) {
-                for (let j = 1; j <= len2; j++) {
-                    const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
-                    dp[i][j] = Math.min(dp[i-1][j] + 1, dp[i][j-1] + 1, dp[i-1][j-1] + cost);
-                }
-            }
-            return 1 - dp[len1][len2] / Math.max(len1, len2);
-        }
-
-        // 语音搜索核心函数（适配口音、语速、发音不清）
-        function startVoiceSearch() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert('您的浏览器不支持语音识别，请使用Chrome、Edge等现代浏览器尝试');
+        // 初始化语音识别
+        function initSpeechRecognition() {
+            // 检查浏览器是否支持语音识别
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                voiceStatus.textContent = '您的浏览器不支持语音识别功能，请使用Chrome浏览器';
+                voiceSearchBtn.disabled = true;
                 return;
             }
-
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'zh-CN';
+            
+            // 创建语音识别对象
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            // 设置识别参数
             recognition.continuous = false;
-            recognition.interimResults = true; // 实时获取中间结果，适配语速快
-            recognition.maxAlternatives = 3; // 保留Top3识别结果，提高容错
-            recognition.timeout = 10000; // 延长超时到10秒，适配语速慢
-            recognition.noSpeechTimeout = 5000; // 无语音超时5秒，避免误判
-
-            // 提示优化：告知可识别的灵活词汇（字体已通过CSS缩小且居左）
-            searchInput.value = "已开启麦克风，请说出「充电宝」";
-
-            recognition.start();
-
-            // 识别成功回调（增强容错逻辑）
+            recognition.interimResults = true;
+            recognition.lang = 'zh-CN';
+            
+            // 识别开始事件
+            recognition.onstart = function() {
+                isListening = true;
+                voiceSearchBtn.classList.add('recording');
+                voiceStatus.textContent = '正在聆听...请说出您要搜索的产品';
+            };
+            
+            // 识别结果事件
             recognition.onresult = function(event) {
-                // 收集所有识别结果（包括中间结果）
-                let allResults = [];
-                for (let i = 0; i < event.results.length; i++) {
-                    allResults.push(event.results[i][0].transcript.trim());
-                }
-                const finalResult = allResults[allResults.length - 1]; // 最终识别结果
-                searchInput.value = `识别到：${finalResult}`;
-
-                // 核心：灵活关键词库（适配口音变体）
-                const targetKeywords = ['充电宝', '电宝', '充宝', '充点宝', '充电宝儿', '电饱', '充饱', '创建宝', '创建包'];
-                // 结果预处理：去空格、去标点、转小写（适配发音不清导致的分隔错误）
-                const processedResult = finalResult.replace(/\s+|[^\u4e00-\u9fa5]/g, '').toLowerCase();
-                const targetProcessed = targetKeywords.map(k => k.replace(/\s+/g, '').toLowerCase());
-
-                // 双重匹配逻辑：精准匹配 + 模糊匹配（相似度≥70%）
-                let isMatch = false;
-                // 1. 精准匹配（包含关键词或关键词包含结果）
-                for (const kw of targetProcessed) {
-                    if (processedResult.includes(kw) || kw.includes(processedResult)) {
-                        isMatch = true;
-                        break;
-                    }
-                }
-                // 2. 模糊匹配（适配发音不清/错别字）
-                if (!isMatch) {
-                    for (const kw of targetProcessed) {
-                        const similarity = calculateSimilarity(processedResult, kw);
-                        if (similarity >= 0.7) {
-                            isMatch = true;
-                            break;
-                        }
-                    }
-                }
-
-                // 停顿1秒后执行搜索逻辑（原2秒改为1秒）
-                setTimeout(() => {
-                    if (isMatch) {
-                        handleSearch();
+                let interimTranscript = '';
+                let finalTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
                     } else {
-                        searchInput.value = "未识别到相关产品，请重试";
-                        setTimeout(() => {
-                            searchInput.value = "点击右侧麦克风说出「充电宝」"; // 保持目标文本一致
-                        }, 1500);
+                        interimTranscript += transcript;
                     }
-                }, 1000);
+                }
+                
+                // 显示识别结果
+                searchInput.value = finalTranscript || interimTranscript;
+                
+                // 检查是否包含白名单关键词
+                if (finalTranscript) {
+                    checkForKeywords(finalTranscript);
+                }
             };
-
-            // 错误处理优化（区分真实错误和正常无语音）
-            recognition.onerror = function(event) {
-                const errorMsgMap = {
-                    'no-speech': '未检测到语音，请对着麦克风说话',
-                    'audio-capture': '请允许麦克风权限后重试',
-                    'not-allowed': '麦克风权限被拒绝，请在浏览器设置中开启',
-                    'service-not-allowed': '语音服务不可用，请稍后重试',
-                    'timeout': '语音识别超时，请放慢语速重试',
-                    'network': '网络异常，语音识别失败'
-                };
-                const errorMsg = errorMsgMap[event.error] || `识别异常：${event.error}`;
-                searchInput.value = errorMsg;
-                setTimeout(() => {
-                    searchInput.value = "点击右侧麦克风说出「充电宝」"; // 保持目标文本一致
-                }, 2000);
-            };
-
-            // 识别正常结束（无语音输入时）
+            
+            // 识别结束事件
             recognition.onend = function() {
-                if (searchInput.value === "已开启麦克风，可说「充电宝/电宝/充宝」") {
-                    searchInput.value = "未检测到语音，请重试";
-                    setTimeout(() => {
-                        searchInput.value = "点击右侧麦克风说出「充电宝」"; // 保持目标文本一致
-                    }, 1500);
+                isListening = false;
+                voiceSearchBtn.classList.remove('recording');
+                voiceStatus.textContent = '语音识别已结束';
+            };
+            
+            // 识别错误事件
+            recognition.onerror = function(event) {
+                isListening = false;
+                voiceSearchBtn.classList.remove('recording');
+                
+                if (event.error === 'not-allowed') {
+                    voiceStatus.textContent = '请允许浏览器使用麦克风权限';
+                } else {
+                    voiceStatus.textContent = '语音识别出错: ' + event.error;
                 }
             };
         }
-
-        function handleSearch() {
-            searchError.classList.remove('show');
-            pageHistory.push(currentPage);
-            currentPage = 'detail';
-            homeView.classList.remove('active');
-            detailView.classList.add('active');
-            backBtn.classList.add('show');
-            slideTo(0);
+        
+        // 检查语音识别结果是否包含关键词
+        function checkForKeywords(transcript) {
+            const lowerTranscript = transcript.toLowerCase();
+            
+            for (const keyword of keywordWhitelist) {
+                if (lowerTranscript.includes(keyword.toLowerCase())) {
+                    voiceStatus.textContent = `识别到关键词"${keyword}"，正在跳转...`;
+                    
+                    // 延迟跳转，让用户看到反馈
+                    setTimeout(() => {
+                        navigateTo('detail');
+                        slideTo(0);
+                    }, 1000);
+                    
+                    return;
+                }
+            }
+            
+            // 如果没有识别到关键词，显示提示
+            voiceStatus.textContent = '未识别到相关产品，请尝试说"充电宝"';
+        }
+        
+        // 切换语音搜索状态
+        function toggleVoiceSearch() {
+            if (!recognition) {
+                voiceStatus.textContent = '语音识别未初始化';
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                searchInput.value = '';
+                voiceStatus.textContent = '准备开始语音识别...';
+                recognition.start();
+            }
         }
 
+        // 搜索功能
+        function handleSearch() {
+            const inputVal = searchInput.value.trim();
+            searchError.classList.remove('show');
+            
+            if (inputVal.includes('电') || inputVal.includes('宝')) {
+                navigateTo('detail');
+                slideTo(0);
+            } else {
+                searchError.classList.add('show');
+            }
+        }
+
+        // 页面导航
+        function navigateTo(page) {
+            pageHistory.push(currentPage);
+            currentPage = page;
+            Object.values(pageElements).forEach(view => view.classList.remove('active'));
+            pageElements[page].classList.add('active');
+            backBtn.classList.toggle('show', page !== 'home');
+        }
+
+        // 产品滑动切换
         function slideTo(index) {
             currentSlideIndex = index;
             detailSlider.style.transform = `translateX(-${50 * index}%)`;
-            indicators.forEach((indicator, i) => {
-                indicator.classList.toggle('active', i === index);
-            });
+            indicators.forEach((ind, i) => ind.classList.toggle('active', i === index));
+            
+            // 更新产品信息
+            detailTitle.textContent = productData[index].title;
+            detailSpec.innerHTML = productData[index].spec;
+            
+            // 只在N款显示加入购物车按钮
+            detailAddCartBtn.classList.toggle('show', index === 1);
         }
 
+        // 滑动手势支持
         detailSlider.addEventListener('touchstart', (e) => {
             window.touchStartX = e.touches[0].clientX;
         });
-
         detailSlider.addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].clientX;
-            const diffX = touchEndX - window.touchStartX;
-            if (diffX < -50 && currentSlideIndex < 1) {
-                slideTo(1);
-            } else if (diffX > 50 && currentSlideIndex > 0) {
-                slideTo(0);
-            }
+            const diffX = e.changedTouches[0].clientX - window.touchStartX;
+            if (diffX < -50 && currentSlideIndex < 1) slideTo(1);
+            if (diffX > 50 && currentSlideIndex > 0) slideTo(0);
         });
 
-        function showSelectModal() {
-            selectModal.style.display = 'flex';
+        // 图片放大功能
+        function showModal(src) {
+            modalImg.src = src;
+            imageModal.classList.add('active');
         }
 
-        selectModal.addEventListener('click', (e) => {
-            if (e.target === selectModal) {
-                selectModal.style.display = 'none';
-            }
-        });
+        function closeModal() {
+            imageModal.classList.remove('active');
+        }
 
-        // 新增数据收集：用户选择后自动上传到LeanCloud
-        function addToCart(type) {
-            selectModal.style.display = 'none';
-            alert(`充电宝 ${type} 已加入购物车！`);
+        // 跳转到对比页
+        function goToCompareView() {
+            navigateTo('compare');
+        }
 
-            // 创建数据记录表格（表名：UserChoices，自动创建）
+        // 对比页加入购物车
+        function compareAddToCart() {
+            const selected = document.querySelector('input[name="product"]:checked').value;
+            alert(`充电宝 ${selected} 已加入购物车！`);
+
+            // 保存选择数据
             const UserChoice = AV.Object.extend('UserChoices');
-            const userChoice = new UserChoice();
-            
-            // 存储核心数据（匿名化，保护用户隐私）
-            userChoice.set('productType', type); // 选择的产品：M或N
-            userChoice.set('chooseTime', new Date()); // 选择时间（精确到秒）
-            userChoice.set('anonymousId', Math.random().toString(36).substr(2, 9)); // 匿名标识（避免重复统计）
+            new UserChoice().save({
+                productType: selected,
+                chooseTime: new Date(),
+                anonymousId: Math.random().toString(36).substr(2, 9)
+            }).catch(err => console.log('数据保存失败：', err.message));
 
-            // 上传数据（成功/失败不影响用户体验）
-            userChoice.save().then(() => {
-                console.log('选择数据已成功保存'); // 仅开发者控制台可见
-            }, (error) => {
-                console.log('数据保存失败：', error.message); // 错误提示仅开发者可见
+            navigateTo('survey1');
+        }
+
+        // 问卷自动提交逻辑
+        function setupSurveyAutoSubmit() {
+            const form = document.getElementById('survey1Form');
+            const websiteRatingInputs = form.querySelectorAll('input[name="websiteRating"]');
+            const usageFrequencyInputs = form.querySelectorAll('input[name="usageFrequency"]');
+            
+            // 检查是否两个问题都已回答
+            function checkAndSubmit() {
+                const websiteRating = form.querySelector('input[name="websiteRating"]:checked');
+                const usageFrequency = form.querySelector('input[name="usageFrequency"]:checked');
+                
+                if (websiteRating && usageFrequency) {
+                    // 自动提交表单
+                    const formData = new FormData(form);
+                    surveyData = {
+                        websiteRating: formData.get('websiteRating'),
+                        usageFrequency: formData.get('usageFrequency')
+                    };
+                    navigateTo('survey2');
+                }
+            }
+            
+            // 为所有单选按钮添加事件监听
+            websiteRatingInputs.forEach(input => {
+                input.addEventListener('change', checkAndSubmit);
+            });
+            
+            usageFrequencyInputs.forEach(input => {
+                input.addEventListener('change', checkAndSubmit);
             });
         }
 
+        // 问卷第二页提交
+        document.getElementById('survey2Form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            Object.assign(surveyData, {
+                gender: formData.get('gender'),
+                age: formData.get('age'),
+                phoneLast4: formData.get('phoneLast4'),
+                anonymousId: Math.random().toString(36).substr(2, 9),
+                submitTime: new Date()
+            });
+
+            // 上传问卷数据
+            const SurveyResponse = AV.Object.extend('SurveyResponses');
+            new SurveyResponse().save(surveyData).catch(err => console.log('问卷保存失败：', err.message));
+
+            alert('感谢您的参与！我们将尽快抽取幸运用户发放礼品');
+            pageHistory = [];
+            navigateTo('home');
+        });
+
+        // 返回上一页
         function goBack() {
             if (pageHistory.length > 0) {
                 const prevPage = pageHistory.pop();
-                homeView.classList.remove('active');
-                detailView.classList.remove('active');
-                
-                if (prevPage === 'home') {
-                    homeView.classList.add('active');
-                    backBtn.classList.remove('show');
-                    searchInput.value = "点击右侧麦克风说出「充电宝」"; // 保持目标文本一致
-                }
-                
                 currentPage = prevPage;
+                Object.values(pageElements).forEach(view => view.classList.remove('active'));
+                pageElements[prevPage].classList.add('active');
+                backBtn.classList.toggle('show', prevPage !== 'home');
             }
         }
+
+        // 初始化语音识别
+        initSpeechRecognition();
+        
+        // 初始化问卷自动提交
+        setupSurveyAutoSubmit();
     </script>
 </body>
 </html>
