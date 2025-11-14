@@ -5,474 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>校园文创线上商城</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        
-        body {
-            background-color: #f5f5f5;
-            padding-bottom: 80px;
-        }
-        
-        .view {
-            display: none;
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        
-        .view.active {
-            display: block;
-        }
-        
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: #333;
-            display: none;
-            z-index: 10;
-        }
-        
-        .back-btn.show {
-            display: block;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background-color: #f5f5f5; padding-bottom: 80px; }
+        .view { display: none; width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; min-height: 100vh; }
+        .view.active { display: block; }
+        .back-btn { position: absolute; top: 20px; left: 20px; background: none; border: none; font-size: 18px; cursor: pointer; color: #333; display: none; z-index: 10; }
+        .back-btn.show { display: block; }
 
         /* 首页样式 */
-        .home-view {
-            text-align: center;
-            padding-top: 60px;
-        }
-        
-        .search-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 20px;
-        }
-        
-        .search-input {
-            width: 70%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 24px;
-            font-size: 14px;
-        }
-        
-        .search-btn {
-            padding: 12px 20px;
-            background-color: #224b8f;
-            color: white;
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .search-error {
-            color: #ff4d4f;
-            margin-top: 15px;
-            display: none;
-        }
-        
-        .home-poster {
-            margin-top: 30px;
-            background-color: #fff;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            text-align: left;
-        }
-        
-        .poster-img {
-            width: 100%;
-            margin: 20px 0 0;
-            display: block;
-            border-radius: 8px;
-        }
-        
-        .poster-title {
-            color: #224b8f;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        
-        .poster-desc {
-            color: #666;
-            line-height: 1.6;
-        }
-        
-        .poster-highlight {
-            color: #224b8f;
-            font-weight: bold;
-        }
+        .home-view { text-align: center; padding-top: 60px; }
+        .search-box { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; }
+        .search-input { width: 70%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 24px; font-size: 14px; }
+        .search-input::placeholder { color: #000; font-weight: bold; }
+        .search-btn { padding: 12px 20px; background-color: #224b8f; color: white; border: none; border-radius: 24px; cursor: pointer; font-size: 16px; }
+        .search-error { color: #ff4d4f; margin-top: 15px; display: none; }
+        .home-poster { margin-top: 30px; background-color: #fff; border-radius: 12px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: left; }
+        .poster-img { width: 100%; margin: 20px 0 0; display: block; border-radius: 8px; }
+        .poster-title { color: #224b8f; font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+        .poster-desc { color: #666; line-height: 1.6; }
+        .poster-highlight { color: #224b8f; font-weight: bold; }
 
         /* 产品详情页 */
-        .detail-view {
-            padding-top: 60px;
-            position: relative;
-        }
-        
-        .detail-container {
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            min-height: calc(100vh - 140px);
-            display: flex;
-            flex-direction: column;
-            padding-bottom: 20px;
-        }
-        
-        .detail-img-wrapper {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-            min-height: 40vh;
-        }
-        
-        .detail-slider {
-            display: flex;
-            width: 200%;
-            height: 100%;
-            transition: transform 0.3s ease;
-            touch-action: pan-y;
-        }
-        
-        .detail-slide {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .detail-img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .detail-info {
-            padding: 15px;
-        }
-        
-        .detail-title {
-            font-size: 20px;
-            margin-bottom: 5px;
-        }
-        
-        .detail-price {
-            font-size: 18px;
-            color: #224b8f;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        
-        .detail-spec {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.8;
-            margin-bottom: 20px;
-        }
-        
-        .detail-controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 15px;
-            gap: 10px;
-        }
-        
-        .indicator-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .indicator-img {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 4px;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-        
-        .indicator-img.active {
-            border: 2px solid #224b8f;
-        }
-        
-        .detail-add-cart {
-            padding: 10px 20px;
-            background-color: #224b8f;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            white-space: nowrap;
-            display: none;
-        }
-        
-        .detail-add-cart.show {
-            display: block;
-        }
+        .detail-view { padding-top: 60px; position: relative; }
+        .detail-container { background-color: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-height: calc(100vh - 140px); display: flex; flex-direction: column; padding-bottom: 20px; }
+        .detail-img-wrapper { flex: 1; overflow: hidden; position: relative; min-height: 40vh; }
+        .detail-slider { display: flex; width: 200%; height: 100%; transition: transform 0.3s ease; touch-action: pan-y; }
+        .detail-slide { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .detail-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; cursor: pointer; }
+        .detail-info { padding: 15px; }
+        .detail-title { font-size: 20px; margin-bottom: 5px; }
+        .detail-price { font-size: 18px; color: #224b8f; font-weight: bold; margin-bottom: 15px; }
+        .detail-spec { font-size: 14px; color: #666; line-height: 1.8; margin-bottom: 20px; }
+        .detail-controls { display: flex; flex-direction: column; padding: 0 15px; gap: 15px; }
+        .indicator-container { display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .indicator-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
+        .indicator-img.active { border: 2px solid #224b8f; }
+        .detail-add-cart { padding: 15px; background-color: #224b8f; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; width: 100%; margin-top: 10px; display: none; }
+        .detail-add-cart.show { display: block; }
 
         /* 加入购物车页 */
-        .compare-view {
-            padding-top: 60px;
-            text-align: center;
-        }
+        .compare-view { padding-top: 60px; text-align: center; }
+        .compare-container { display: flex; justify-content: center; gap: 20px; margin: 30px 0; }
+        .compare-item { width: 45%; background-color: #fff; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .compare-img { width: 100%; height: 140px; object-fit: contain; border-radius: 8px; margin-bottom: 10px; cursor: pointer; }
+        .compare-title { font-size: 18px; margin-bottom: 5px; text-align: left; }
+        .compare-price { font-size: 16px; color: #224b8f; text-align: left; margin-bottom: 10px; }
+        .compare-spec { font-size: 12px; color: #666; line-height: 1.5; text-align: left; flex-grow: 1; }
+        .select-container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 20px 30px; }
+        .style-select, .quantity-select { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .style-label, .quantity-label { font-size: 16px; font-weight: 500; }
         
-        .compare-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .compare-item {
-            width: 45%;
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .compare-img {
-            width: 100%;
-            height: 140px;
-            object-fit: contain;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-        
-        .compare-title {
-            font-size: 18px;
-            margin-bottom: 5px;
-            text-align: left;
-        }
-        
-        .compare-price {
-            font-size: 16px;
+        /* 修改后的款式选择样式 */
+        .style-options { display: flex; gap: 15px; }
+        .style-option { 
+            width: 120px; 
+            height: 40px; 
+            border: 2px solid #224b8f; 
+            border-radius: 4px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            background-color: white; 
             color: #224b8f;
-            text-align: left;
-            margin-bottom: 10px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .style-option.selected { 
+            background-color: #224b8f; 
+            color: white; 
         }
         
-        .compare-spec {
-            font-size: 12px;
-            color: #666;
-            line-height: 1.5;
-            text-align: left;
-            flex-grow: 1;
-        }
-        
-        .select-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin: 0 20px 30px;
-        }
-        
-        .style-select {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .style-label {
-            font-size: 16px;
-            font-weight: 500;
-        }
-        
-        .style-radio-group {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .radio-label {
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .quantity-select {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .quantity-label {
-            font-size: 16px;
-            font-weight: 500;
-        }
-        
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 0;
-        }
-        
-        .quantity-btn {
-            width: 30px;
-            height: 30px;
-            background-color: #f5f5f5;
-            border: 1px solid #ddd;
-            border-radius: 0;
-            font-size: 16px;
-            cursor: not-allowed;
-            color: #999;
-        }
-        
-        .quantity-btn:first-child {
-            border-radius: 4px 0 0 4px;
-        }
-        
-        .quantity-btn:last-child {
-            border-radius: 0 4px 4px 0;
-        }
-        
-        .quantity-input {
-            width: 50px;
-            height: 30px;
-            border-top: 1px solid #ddd;
-            border-bottom: 1px solid #ddd;
-            border-left: none;
-            border-right: none;
-            text-align: center;
-            font-size: 16px;
-        }
-        
-        .compare-add-cart {
-            padding: 12px;
-            background-color: #224b8f;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-        }
+        .quantity-control { display: flex; align-items: center; gap: 0; }
+        .quantity-btn { width: 30px; height: 30px; background-color: #f5f5f5; border: 1px solid #ddd; border-radius: 0; font-size: 16px; cursor: not-allowed; color: #999; }
+        .quantity-btn:first-child { border-radius: 4px 0 0 4px; }
+        .quantity-btn:last-child { border-radius: 0 4px 4px 0; }
+        .quantity-input { width: 50px; height: 30px; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; border-left: none; border-right: none; text-align: center; font-size: 16px; }
+        .compare-add-cart { padding: 12px; background-color: #224b8f; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; width: 100%; }
 
         /* 问卷页面 */
-        .survey-container {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin: 20px 0 30px;
-        }
-        
-        .survey-title {
-            font-size: 22px;
-            color: #224b8f;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        
-        .survey-desc {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-        
-        .survey-item {
-            margin-bottom: 20px;
-        }
-        
-        .survey-question {
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-        
-        .rating-group {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-        
-        .gender-group {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .rating-group label,
-        .gender-group label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-        }
-        
-        .survey-item input[type="text"],
-        .survey-item input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        
-        .survey-submit-btn {
-            width: 100%;
-            padding: 14px;
-            background-color: #224b8f;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+        .survey-container { background-color: #fff; border-radius: 8px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 60px 0 30px; }
+        .survey-title { font-size: 22px; color: #224b8f; margin-bottom: 15px; text-align: center; }
+        .survey-desc { color: #666; line-height: 1.6; margin-bottom: 30px; }
+        .survey-item { margin-bottom: 30px; }
+        .survey-question { font-size: 16px; margin-bottom: 15px; }
+        .scale-labels { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; color: #666; }
+        .rating-group { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; }
+        .rating-box { flex: 1; height: 40px; display: flex; align-items: center; justify-content: center; background-color: #f5f5f5; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; font-weight: bold; }
+        .rating-box:hover { background-color: #e9ecef; }
+        .rating-box.selected { background-color: #224b8f; color: white; border-color: #224b8f; }
+        .gender-group { display: flex; gap: 15px; }
+        .survey-item input[type="text"], .survey-item input[type="number"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; margin-top: 5px; }
+        .survey-submit-btn, .lottery-btn { width: 100%; padding: 14px; background-color: #224b8f; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; margin-top: 10px; }
 
         /* 图片放大效果 */
-        .image-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        
-        .image-modal.active {
-            display: flex;
-        }
-        
-        .modal-img {
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-        }
+        .image-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 100; }
+        .image-modal.active { display: flex; }
+        .modal-img { max-width: 90%; max-height: 90%; object-fit: contain; }
     </style>
 </head>
 <body>
@@ -516,6 +145,15 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 缩略图区域 -->
+            <div class="detail-controls">
+                <div class="indicator-container">
+                    <img class="indicator-img active" data-index="0" onclick="slideTo(0)" src="https://youke1.picui.cn/s1/2025/11/10/69119464e3bdc.png" alt="充电宝M缩略图">
+                    <img class="indicator-img" data-index="1" onclick="slideTo(1)" src="https://youke1.picui.cn/s1/2025/11/12/691450b372874.png" alt="充电宝N缩略图">
+                </div>
+            </div>
+            
             <!-- 产品信息区域 -->
             <div class="detail-info">
                 <div class="detail-title" id="detailProductTitle">充电宝 M</div>
@@ -527,12 +165,9 @@
                     其他外观特性：轻薄小巧、流线型设计、颜值高
                 </div>
             </div>
-            <!-- 底部控制栏 -->
+            
+            <!-- 加入购物车按钮 -->
             <div class="detail-controls">
-                <div class="indicator-container">
-                    <img class="indicator-img active" data-index="0" onclick="slideTo(0)" src="https://youke1.picui.cn/s1/2025/11/10/69119464e3bdc.png" alt="充电宝M缩略图">
-                    <img class="indicator-img" data-index="1" onclick="slideTo(1)" src="https://youke1.picui.cn/s1/2025/11/12/691450b372874.png" alt="充电宝N缩略图">
-                </div>
                 <button class="detail-add-cart" id="detailAddCartBtn" onclick="goToCompareView()">加入购物车</button>
             </div>
         </div>
@@ -570,13 +205,9 @@
             <!-- 款式选择 -->
             <div class="style-select">
                 <span class="style-label">款式：</span>
-                <div class="style-radio-group">
-                    <label class="radio-label">
-                        <input type="radio" name="product" value="M" checked> 充电宝 M
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="product" value="N"> 充电宝 N
-                    </label>
+                <div class="style-options">
+                    <div class="style-option" data-value="M">充电宝 M</div>
+                    <div class="style-option" data-value="N">充电宝 N</div>
                 </div>
             </div>
             <!-- 数量选择 -->
@@ -603,30 +234,39 @@
             <form id="survey1Form">
                 <div class="survey-item">
                     <div class="survey-question">1. 请您对刚才的网站设计与搜索体验进行评价。</div>
-                     <div class="question-instruction">（1=一点都不好，7=非常好）</div>
-                    <div class="rating-group">
-                        <label><input type="radio" name="websiteRating" value="1" required> 1</label>
-                        <label><input type="radio" name="websiteRating" value="2"> 2</label>
-                        <label><input type="radio" name="websiteRating" value="3"> 3</label>
-                        <label><input type="radio" name="websiteRating" value="4"> 4</label>
-                        <label><input type="radio" name="websiteRating" value="5"> 5</label>
-                        <label><input type="radio" name="websiteRating" value="6"> 6</label>
-                        <label><input type="radio" name="websiteRating" value="7"> 7</label>
+                    <div class="scale-labels">
+                        <span>1=一点都不好</span>
+                        <span>7=非常好</span>
                     </div>
+                    <div class="rating-group">
+                        <div class="rating-box" data-value="1">1</div>
+                        <div class="rating-box" data-value="2">2</div>
+                        <div class="rating-box" data-value="3">3</div>
+                        <div class="rating-box" data-value="4">4</div>
+                        <div class="rating-box" data-value="5">5</div>
+                        <div class="rating-box" data-value="6">6</div>
+                        <div class="rating-box" data-value="7">7</div>
+                    </div>
+                    <input type="hidden" name="websiteRating" id="websiteRating" required>
                 </div>
                 <div class="survey-item">
                     <div class="survey-question">2. 您平时使用充电宝的频率？</div> 
-                     <div class="question-instruction">（1=一点都不频繁，7=非常频繁）</div>
-                    <div class="rating-group">
-                        <label><input type="radio" name="usageFrequency" value="1" required> 1</label>
-                        <label><input type="radio" name="usageFrequency" value="2"> 2</label>
-                        <label><input type="radio" name="usageFrequency" value="3"> 3</label>
-                        <label><input type="radio" name="usageFrequency" value="4"> 4</label>
-                        <label><input type="radio" name="usageFrequency" value="5"> 5</label>
-                        <label><input type="radio" name="usageFrequency" value="6"> 6</label>
-                        <label><input type="radio" name="usageFrequency" value="7"> 7</label>
+                    <div class="scale-labels">
+                        <span>1=一点都不频繁</span>
+                        <span>7=非常频繁</span>
                     </div>
+                    <div class="rating-group">
+                        <div class="rating-box" data-value="1">1</div>
+                        <div class="rating-box" data-value="2">2</div>
+                        <div class="rating-box" data-value="3">3</div>
+                        <div class="rating-box" data-value="4">4</div>
+                        <div class="rating-box" data-value="5">5</div>
+                        <div class="rating-box" data-value="6">6</div>
+                        <div class="rating-box" data-value="7">7</div>
+                    </div>
+                    <input type="hidden" name="usageFrequency" id="usageFrequency" required>
                 </div>
+                <button type="button" class="lottery-btn" id="lotteryBtn">点击抽奖</button>
             </form>
         </div>
     </div>
@@ -686,6 +326,7 @@
         const detailAddCartBtn = document.getElementById('detailAddCartBtn');
         const imageModal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImg');
+        const lotteryBtn = document.getElementById('lotteryBtn');
 
         // 产品数据
         const productData = [
@@ -704,6 +345,8 @@
         let pageHistory = [];
         let currentSlideIndex = 0;
         let surveyData = {};
+        let touchStartX = 0;
+        let selectedProduct = ''; // 存储用户选择的充电宝款式
 
         // 搜索功能
         function handleSearch() {
@@ -725,6 +368,11 @@
             Object.values(pageElements).forEach(view => view.classList.remove('active'));
             pageElements[page].classList.add('active');
             backBtn.classList.toggle('show', page !== 'home');
+            
+            // 初始化款式选择（当进入compare页面时）
+            if (page === 'compare') {
+                initStyleSelection();
+            }
         }
 
         // 产品滑动切换
@@ -741,14 +389,20 @@
             detailAddCartBtn.classList.toggle('show', index === 1);
         }
 
-        // 滑动手势支持
-        detailSlider.addEventListener('touchstart', (e) => {
-            window.touchStartX = e.touches[0].clientX;
+        // 滑动手势支持 - 整个页面都可以滑动
+        document.getElementById('detailView').addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
         });
-        detailSlider.addEventListener('touchend', (e) => {
-            const diffX = e.changedTouches[0].clientX - window.touchStartX;
-            if (diffX < -50 && currentSlideIndex < 1) slideTo(1);
-            if (diffX > 50 && currentSlideIndex > 0) slideTo(0);
+        
+        document.getElementById('detailView').addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diffX = touchEndX - touchStartX;
+            
+            if (diffX < -50 && currentSlideIndex < 1) {
+                slideTo(1);
+            } else if (diffX > 50 && currentSlideIndex > 0) {
+                slideTo(0);
+            }
         });
 
         // 图片放大功能
@@ -766,51 +420,83 @@
             navigateTo('compare');
         }
 
+        // 初始化款式选择
+        function initStyleSelection() {
+            const styleOptions = document.querySelectorAll('.style-option');
+            
+            // 清除之前的选择状态
+            styleOptions.forEach(option => option.classList.remove('selected'));
+            selectedProduct = '';
+            
+            // 添加点击事件
+            styleOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // 移除所有选项的选中状态
+                    styleOptions.forEach(opt => opt.classList.remove('selected'));
+                    
+                    // 设置当前选项为选中状态
+                    this.classList.add('selected');
+                    
+                    // 更新选中的产品
+                    selectedProduct = this.getAttribute('data-value');
+                });
+            });
+        }
+
         // 对比页加入购物车
         function compareAddToCart() {
-            const selected = document.querySelector('input[name="product"]:checked').value;
-            alert(`充电宝 ${selected} 已加入购物车！`);
-
-            // 保存选择数据
-            const UserChoice = AV.Object.extend('UserChoices');
-            new UserChoice().save({
-                productType: selected,
-                chooseTime: new Date(),
-                anonymousId: Math.random().toString(36).substr(2, 9)
-            }).catch(err => console.log('数据保存失败：', err.message));
-
+            if (!selectedProduct) {
+                alert('请选择一款充电宝');
+                return;
+            }
+            
+            alert(`充电宝 ${selectedProduct} 已加入购物车！`);
             navigateTo('survey1');
         }
 
-        // 问卷自动提交逻辑
-        function setupSurveyAutoSubmit() {
+        // 问卷逻辑
+        function setupSurvey() {
             const form = document.getElementById('survey1Form');
-            const websiteRatingInputs = form.querySelectorAll('input[name="websiteRating"]');
-            const usageFrequencyInputs = form.querySelectorAll('input[name="usageFrequency"]');
+            const ratingBoxes = document.querySelectorAll('.rating-box');
+            const websiteRatingInput = document.getElementById('websiteRating');
+            const usageFrequencyInput = document.getElementById('usageFrequency');
             
-            // 检查是否两个问题都已回答
-            function checkAndSubmit() {
-                const websiteRating = form.querySelector('input[name="websiteRating"]:checked');
-                const usageFrequency = form.querySelector('input[name="usageFrequency"]:checked');
-                
-                if (websiteRating && usageFrequency) {
-                    // 自动提交表单
-                    const formData = new FormData(form);
-                    surveyData = {
-                        websiteRating: formData.get('websiteRating'),
-                        usageFrequency: formData.get('usageFrequency')
-                    };
-                    navigateTo('survey2');
-                }
-            }
-            
-            // 为所有单选按钮添加事件监听
-            websiteRatingInputs.forEach(input => {
-                input.addEventListener('change', checkAndSubmit);
+            // 为所有评分框添加事件监听
+            ratingBoxes.forEach(box => {
+                box.addEventListener('click', function() {
+                    const question = this.parentElement;
+                    const allBoxes = question.querySelectorAll('.rating-box');
+                    
+                    // 移除同组其他框的选中状态
+                    allBoxes.forEach(b => b.classList.remove('selected'));
+                    
+                    // 设置当前框为选中状态
+                    this.classList.add('selected');
+                    
+                    // 更新对应的隐藏输入框值
+                    if (question.previousElementSibling.previousElementSibling.textContent.includes('网站设计与搜索体验')) {
+                        websiteRatingInput.value = this.getAttribute('data-value');
+                    } else {
+                        usageFrequencyInput.value = this.getAttribute('data-value');
+                    }
+                });
             });
             
-            usageFrequencyInputs.forEach(input => {
-                input.addEventListener('change', checkAndSubmit);
+            // 抽奖按钮点击事件
+            lotteryBtn.addEventListener('click', function() {
+                const websiteRating = websiteRatingInput.value;
+                const usageFrequency = usageFrequencyInput.value;
+                
+                if (websiteRating && usageFrequency) {
+                    surveyData = {
+                        websiteRating: websiteRating,
+                        usageFrequency: usageFrequency,
+                        selectedProduct: selectedProduct // 保存用户选择的充电宝款式
+                    };
+                    navigateTo('survey2');
+                } else {
+                    alert('请先完成两个问题的评分');
+                }
             });
         }
 
@@ -818,6 +504,8 @@
         document.getElementById('survey2Form').addEventListener('submit', (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
+            
+            // 合并所有数据
             Object.assign(surveyData, {
                 gender: formData.get('gender'),
                 age: formData.get('age'),
@@ -826,13 +514,16 @@
                 submitTime: new Date()
             });
 
-            // 上传问卷数据
+            // 上传所有数据到SurveyResponses表
             const SurveyResponse = AV.Object.extend('SurveyResponses');
-            new SurveyResponse().save(surveyData).catch(err => console.log('问卷保存失败：', err.message));
-
-            alert('感谢您的参与！我们将尽快抽取幸运用户发放礼品');
-            pageHistory = [];
-            navigateTo('home');
+            new SurveyResponse().save(surveyData).then(() => {
+                alert('感谢您的参与！我们将尽快抽取幸运用户发放礼品');
+                pageHistory = [];
+                navigateTo('home');
+            }).catch(err => {
+                console.log('问卷保存失败：', err.message);
+                alert('提交失败，请稍后重试');
+            });
         });
 
         // 返回上一页
@@ -846,8 +537,8 @@
             }
         }
 
-        // 初始化问卷自动提交
-        setupSurveyAutoSubmit();
+        // 初始化问卷
+        setupSurvey();
     </script>
 </body>
 </html>
