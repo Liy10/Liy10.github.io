@@ -50,21 +50,28 @@
             gap: 15px; 
             margin: 20px 0; 
             flex-wrap: nowrap; /* 确保不换行 */
-            overflow-x: auto; /* 允许水平滚动 */
-            padding-bottom: 10px; /* 为滚动条留空间 */
+            justify-content: space-between; /* 确保两个项目均匀分布 */
         }
         .compare-item { 
-            flex: 0 0 48%; /* 固定宽度，确保两个项目并排 */
-            min-width: 280px; /* 最小宽度确保内容可读 */
+            flex: 1; /* 使用flex:1确保两个项目平分空间 */
+            min-width: 0; /* 允许项目收缩 */
             background-color: #fff; 
             border-radius: 8px; 
             padding: 15px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-direction: column;
         }
-        .compare-img { width: 100%; height: 140px; object-fit: contain; border-radius: 8px; margin-bottom: 10px; }
-        .compare-title { font-size: 18px; margin-bottom: 5px; }
+        .compare-img { 
+            width: 100%; 
+            height: 100px; /* 缩小图片高度 */
+            object-fit: contain; 
+            border-radius: 8px; 
+            margin-bottom: 10px; 
+        }
+        .compare-title { font-size: 16px; margin-bottom: 5px; }
         .compare-price { font-size: 16px; color: #224b8f; margin-bottom: 10px; }
-        .compare-spec { font-size: 12px; color: #666; }
+        .compare-spec { font-size: 11px; color: #666; line-height: 1.4; }
         .select-container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 0 30px; }
         .style-select, .quantity-select { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .style-label, .quantity-label { font-size: 16px; font-weight: 500; }
@@ -115,8 +122,17 @@
         /* 响应式调整 */
         @media (max-width: 480px) {
             .compare-item { 
-                flex: 0 0 85%; /* 在小屏幕上稍微增加宽度 */
-                min-width: 250px;
+                flex: 1; /* 保持平分空间 */
+                min-width: 0; /* 允许项目收缩 */
+            }
+            .compare-img {
+                height: 90px; /* 在更小的屏幕上进一步缩小图片 */
+            }
+            .compare-title {
+                font-size: 15px;
+            }
+            .compare-spec {
+                font-size: 10px;
             }
             .select-container { padding: 15px; }
             .style-options { justify-content: center; }
