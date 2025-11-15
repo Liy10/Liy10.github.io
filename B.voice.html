@@ -74,12 +74,12 @@
             display: flex; 
             gap: 15px; 
             margin: 20px 0; 
-            flex-wrap: nowrap; /* 确保不换行 */
-            justify-content: space-between; /* 确保两个项目均匀分布 */
+            flex-wrap: nowrap; 
+            justify-content: space-between; 
         }
         .compare-item { 
-            flex: 1; /* 使用flex:1确保两个项目平分空间 */
-            min-width: 0; /* 允许项目收缩 */
+            flex: 1; 
+            min-width: 0; 
             background-color: #fff; 
             border-radius: 8px; 
             padding: 15px; 
@@ -89,7 +89,7 @@
         }
         .compare-img { 
             width: 100%; 
-            height: 100px; /* 缩小图片高度 */
+            height: 100px; 
             object-fit: contain; 
             border-radius: 8px; 
             margin-bottom: 10px; 
@@ -157,11 +157,11 @@
         /* 响应式调整 */
         @media (max-width: 480px) {
             .compare-item { 
-                flex: 1; /* 保持平分空间 */
-                min-width: 0; /* 允许项目收缩 */
+                flex: 1; 
+                min-width: 0; 
             }
             .compare-img {
-                height: 90px; /* 在更小的屏幕上进一步缩小图片 */
+                height: 90px; 
             }
             .compare-title {
                 font-size: 15px;
@@ -346,7 +346,7 @@
     <!-- 问卷第二页 -->
     <div class="view survey2-view" id="survey2View">
         <div class="survey-container">
-            <div class="survey-title">抽奖信息收集</div>
+            <div class="survey-title">基础信息收集</div>
             <div class="survey-desc">
                 本页为后续奖品发放收集基本信息，我们将严格保密您的个人信息。
             </div>
@@ -394,11 +394,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.12.0/dist/av-min.js"></script>
     <script>
-        // 初始化LeanCloud - 更新配置
+        // 修正：LeanCloud 初始化配置（核心修复）
         AV.init({
           appId: "ekLgiETWmtKbV3Otf9RTYGfi-gzGzoHsz",
           appKey: "FMrbuHo4xHZ7lsio1P6zY4HW",
-          serverURL: "https://ekl-giet-wmt-kbv3otf9rtygfi.gzgzo.hsz.com"
+          serverURL: "https://ekLgiETWmtKbV3Otf9RTYGfi-gzGzoHsz.api.lncld.net" // 正确的国内节点地址
         });
 
         // 页面元素引用
@@ -659,17 +659,18 @@
             };
         }
 
-        // 问卷第二页提交
+        // 问卷第二页提交（修正：完善错误处理）
         document.getElementById('survey2Form').onsubmit = (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             
-            Object.assign(surveyData, {
+            // 整合问卷数据
+            const finalData = Object.assign(surveyData, {
                 gender: formData.get('gender'),
                 age: formData.get('age'),
                 phoneLast4: formData.get('phoneLast4'),
                 anonymousId: Math.random().toString(36).substr(2, 9),
-                submitTime: new Date()
+                submitTime: new Date().toISOString() // 标准化时间格式
             });
 
             navigateTo('lottery');
@@ -677,15 +678,26 @@
             loadingContainer.style.display = 'block';
             lotteryResult.style.display = 'none';
             
+            // 模拟抽奖过程
             setTimeout(() => {
-                loadingContainer.style.display = 'none';
-                lotteryResult.style.display = 'block';
-                
+                // 保存数据到 LeanCloud（修正：增加详细错误提示）
                 const SurveyResponse = AV.Object.extend('SurveyResponses');
-                new SurveyResponse().save(surveyData).then(() => {
-                    console.log('问卷数据保存成功');
+                const survey = new SurveyResponse();
+                
+                survey.save(finalData).then(() => {
+                    console.log('问卷数据保存成功:', finalData);
+                    alert('数据提交成功！可在 LeanCloud 控制台查看');
                 }).catch(err => {
-                    console.log('问卷保存失败：', err.message);
+                    console.error('数据保存失败:', {
+                        code: err.code,
+                        message: err.message,
+                        data: finalData
+                    });
+                    alert(`数据保存失败: ${err.message}（错误码: ${err.code}）`);
+                }).finally(() => {
+                    // 无论成功失败都显示抽奖结果
+                    loadingContainer.style.display = 'none';
+                    lotteryResult.style.display = 'block';
                 });
             }, 2000);
         };
@@ -709,5 +721,3 @@
     </script>
 </body>
 </html>
-
-
