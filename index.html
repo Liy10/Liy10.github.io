@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>毕业旅行拼团规划 · 组队·行程·AA记账</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230d9488' d='M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/%3E%3C/svg%3E">
+<style>
+/* ========== 基础变量与重置 ========== */
+:root{
+  --teal:#0d9488; --teal-dark:#0f766e; --teal-light:#ccfbf1;
+  --amber:#f59e0b; --amber-dark:#d97706; --amber-light:#fef3c7;
+  --ink:#1f2937; --ink-2:#6b7280; --line:#e5e7eb; --bg:#f6f8f9;
+  --card:#ffffff; --red:#ef4444; --green:#16a34a;
+  --shadow:0 2px 10px rgba(15,118,110,.08);
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:14px;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:0;border-color:transparent}
+h1,h2,h3{font-weight:700}
+.hidden{display:none!important}
+svg{display:block}
+
+/* ========== 落地页 ========== */
+.landing{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;
+  background:linear-gradient(160deg,#f0fdfa 0%,#f6f8f9 45%,#fffbeb 100%)}
+.landing-hero{width:100%;max-width:880px;text-align:center}
+.landing-logo{width:72px;height:72px;margin:0 auto 18px}
+.landing h1{font-size:clamp(28px,5vw,44px);letter-spacing:1px;margin-bottom:10px}
+.landing h1 .accent{color:var(--teal)}
+.landing .sub{color:var(--ink-2);font-size:16px;margin-bottom:36px}
+.landing-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:40px}
+.feature{background:var(--card);border-radius:var(--radius);padding:22px 14px;box-shadow:var(--shadow)}
+.feature .fi{width:38px;height:38px;margin:0 auto 10px;color:var(--teal)}
+.feature h3{font-size:15px;margin-bottom:4px}
+.feature p{font-size:12.5px;color:var(--ink-2)}
+.landing-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:10px;font-size:15px;font-weight:600;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--teal);color:#fff}
+.btn-primary:hover{background:var(--teal-dark)}
+.btn-amber{background:var(--amber);color:#fff}
+.btn-amber:hover{background:var(--amber-dark)}
+.btn-ghost{background:#fff;color:var(--teal);border:1.5px solid var(--teal)}
+.btn-ghost:hover{background:var(--teal-light)}
+.btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
+.btn-danger{color:var(--red);font-size:13px;padding:4px 8px;border-radius:6px}
+.btn-danger:hover{background:#fef2f2}
+
+/* 弹窗 */
+.modal-mask{position:fixed;inset:0;background:rgba(31,41,55,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal{background:#fff;border-radius:var(--radius);width:100%;max-width:420px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{margin-bottom:18px;font-size:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--ink)}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;background:#fff}
+.field textarea{resize:vertical;min-height:60px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.modal-tip{font-size:12.5px;color:var(--ink-2);margin-top:8px}
+
+/* ========== 主应用布局 ========== */
+.app{max-width:1080px;margin:0 auto;padding:0 18px 60px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+.brand svg{width:30px;height:30px;color:var(--teal)}
+.topbar-right{display:flex;gap:8px;flex-wrap:wrap}
+.team-banner{background:linear-gradient(120deg,var(--teal),#14b8a6);color:#fff;border-radius:var(--radius);
+  padding:20px 24px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.team-banner h2{font-size:20px}
+.team-banner .meta{font-size:13px;opacity:.9;margin-top:2px}
+.code-chip{background:rgba(255,255,255,.18);border:1px dashed rgba(255,255,255,.7);border-radius:10px;
+  padding:8px 16px;font-size:18px;font-weight:700;letter-spacing:3px;display:flex;align-items:center;gap:10px}
+.code-chip button{color:#fff;opacity:.85}
+.code-chip button:hover{opacity:1}
+
+/* 标签导航 */
+.tabs{display:flex;gap:6px;background:#fff;border-radius:12px;padding:6px;box-shadow:var(--shadow);margin-bottom:20px;overflow-x:auto}
+.tab{flex:1;min-width:96px;padding:10px 8px;border-radius:8px;font-size:14px;font-weight:600;color:var(--ink-2);
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s;white-space:nowrap}
+.tab svg{width:17px;height:17px}
+.tab.active{background:var(--teal);color:#fff}
+.tab:not(.active):hover{background:var(--teal-light)}
+
+.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;animation:fade .2s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.panel-head h3{font-size:17px}
+.panel-head .hint{font-size:12.5px;color:var(--ink-2)}
+.empty{text-align:center;padding:44px 20px;color:var(--ink-2);font-size:14px}
+.empty svg{width:52px;height:52px;margin:0 auto 12px;color:#cbd5e1}
+
+/* ========== 成员 ========== */
+.member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.member-card{border:1.5px solid var(--line);border-radius:12px;padding:14px}
+.member-card .top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--teal-light);color:var(--teal-dark);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0}
+.member-card .name{font-weight:700;font-size:15px}
+.member-card .budget{font-size:12.5px;color:var(--amber-dark);font-weight:600}
+.member-card .info{font-size:12.5px;color:var(--ink-2)}
+.member-card .info div{margin-top:2px}
+.member-card .actions{margin-top:8px;text-align:right}
+
+/* ========== 目的地投票 ========== */
+.dest-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.dest-card{border:1.5px solid var(--line);border-radius:12px;padding:16px;position:relative;transition:.15s}
+.dest-card.winner{border-color:var(--amber);background:var(--amber-light)}
+.dest-card h4{font-size:16px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.dest-card .desc{font-size:12.5px;color:var(--ink-2);margin-bottom:10px;min-height:18px}
+.vote-bar{height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin-bottom:8px}
+.vote-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),#2dd4bf);border-radius:4px;transition:.3s}
+.vote-foot{display:flex;align-items:center;justify-content:space-between;font-size:13px}
+.vote-users{color:var(--ink-2);font-size:12px}
+.vote-btn{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;background:var(--teal-light);color:var(--teal-dark)}
+.vote-btn.on{background:var(--teal);color:#fff}
+.dest-del{position:absolute;top:10px;right:10px}
+
+/* ========== 行程时间轴 ========== */
+.day-block{margin-bottom:22px}
+.day-title{font-size:15px;font-weight:700;background:var(--teal-light);color:var(--teal-dark);
+  display:inline-block;padding:5px 14px;border-radius:8px;margin-bottom:12px}
+.tl{display:grid;grid-template-columns:78px 22px 1fr;row-gap:0}
+.tl-time{text-align:right;padding-right:12px;font-size:13px;font-weight:600;color:var(--ink-2);padding-top:2px}
+.tl-axis{position:relative}
+.tl-axis::before{content:"";position:absolute;left:50%;top:8px;bottom:8px;width:2px;background:var(--line);transform:translateX(-50%)}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:var(--amber);border:3px solid #fff;
+  box-shadow:0 0 0 2px var(--amber);position:relative;z-index:1;margin:5px auto 0}
+.tl-item{padding:0 0 18px 14px}
+.tl-card{border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;position:relative}
+.tl-card h5{font-size:14px;margin-bottom:2px}
+.tl-card p{font-size:12.5px;color:var(--ink-2)}
+.tl-card .del{position:absolute;top:8px;right:8px}
+
+/* ========== 费用 ========== */
+.bill-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.stat{background:#f8fafc;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat .lab{font-size:12.5px;color:var(--ink-2)}
+.stat .num{font-size:22px;font-weight:700;margin-top:2px}
+.stat .num.teal{color:var(--teal-dark)}
+.bill-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:18px}
+.bill-table th,.bill-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.bill-table th{background:#f8fafc;font-size:12.5px;color:var(--ink-2);font-weight:600}
+.bill-table col.col1{width:22%}.bill-table col.col2{width:18%}.bill-table col.col3{width:16%}.bill-table col.col4{width:32%}.bill-table col.col5{width:12%}
+.settle-list{list-style:none}
+.settle-list li{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#f0fdfa;border-radius:9px;margin-bottom:8px;font-size:13.5px;flex-wrap:wrap}
+.settle-list .arrow{color:var(--teal);font-weight:700}
+.settle-list .amt{color:var(--red);font-weight:700;margin-left:auto}
+.chip{display:inline-block;background:#f1f5f9;border-radius:6px;padding:1px 8px;font-size:12px;color:var(--ink-2);margin:1px 2px}
+
+/* checkbox 多选参与者 */
+.participant-box{display:flex;flex-wrap:wrap;gap:8px}
+.pchk{display:flex;align-items:center;gap:5px;border:1.5px solid var(--line);border-radius:8px;padding:6px 11px;font-size:13px;cursor:pointer}
+.pchk input{accent-color:var(--teal)}
+.pchk.on{border-color:var(--teal);background:var(--teal-light)}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);background:var(--ink);
+  color:#fff;padding:10px 22px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;z-index:200;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ========== 响应式 ========== */
+@media(max-width:760px){
+  .landing-cards{grid-template-columns:repeat(2,1fr)}
+  .bill-summary{grid-template-columns:1fr 1fr}
+  .bill-summary .stat:last-child{grid-column:span 2}
+  .panel{padding:16px}
+  .tl{grid-template-columns:64px 18px 1fr}
+  .bill-table{font-size:12.5px}
+  .bill-table th,.bill-table td{padding:8px 6px}
+}
+@media(max-width:420px){
+  .landing-cards{grid-template-columns:1fr}
+  .code-chip{font-size:15px;letter-spacing:2px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 落地页 ===== -->
+<div class="landing" id="landing">
+  <div class="landing-hero">
+    <svg class="landing-logo" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+    </svg>
+    <h1>毕业旅行 · <span class="accent">拼团规划站</span></h1>
+    <p class="sub">快速组队 · 目的地投票 · 统一行程 · 费用 AA，一个链接全搞定</p>
+    <div class="landing-cards">
+      <div class="feature"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><h3>快速组队</h3><p>生成团队码，同学一键加入</p></div>
+      <div class="feature"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><h3>目的地投票</h3><p>提名目的地，少数服从多数</p></div>
+      <div class="feature"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><h3>统一行程</h3><p>按天排布时间轴，行程不冲突</p></div>
+      <div class="feature"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><h3>费用 AA</h3><p>记一笔自动算，谁转谁一目了然</p></div>
+    </div>
+    <div class="landing-actions">
+      <button class="btn btn-primary" onclick="openCreate()">创建我的旅行团</button>
+      <button class="btn btn-ghost" onclick="openJoin()">输入团队码加入</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 主应用 ===== -->
+<div class="app hidden" id="app">
+  <div class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      拼团规划站
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost btn-sm" onclick="shareLink()">复制邀请链接</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportData()">导出备份</button>
+      <button class="btn btn-ghost btn-sm" onclick="importDataPrompt()">导入数据</button>
+      <button class="btn btn-danger" onclick="leaveTeam()">退出团队</button>
+    </div>
+  </div>
+
+  <div class="team-banner">
+    <div>
+      <h2 id="teamName"></h2>
+      <div class="meta" id="teamMeta"></div>
+    </div>
+    <div class="code-chip" id="codeChip"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="members" onclick="switchTab('members')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>成员</button>
+    <button class="tab" data-tab="dest" onclick="switchTab('dest')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>目的地</button>
+    <button class="tab" data-tab="plan" onclick="switchTab('plan')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>行程</button>
+    <button class="tab" data-tab="bill" onclick="switchTab('bill')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>费用分摊</button>
+  </div>
+
+  <!-- 成员面板 -->
+  <div class="panel" id="panel-members">
+    <div class="panel-head">
+      <h3>团队成员 <span class="hint" id="memberHint"></span></h3>
+      <button class="btn btn-primary btn-sm" onclick="memberModal()">+ 添加成员</button>
+    </div>
+    <div id="memberList"></div>
+  </div>
+
+  <!-- 目的地面板 -->
+  <div class="panel hidden" id="panel-dest">
+    <div class="panel-head">
+      <h3>目的地投票</h3>
+      <button class="btn btn-primary btn-sm" onclick="destModal()">+ 提名目的地</button>
+    </div>
+    <div id="destList"></div>
+  </div>
+
+  <!-- 行程面板 -->
+  <div class="panel hidden" id="panel-plan">
+    <div class="panel-head">
+      <h3>行程安排</h3>
+      <button class="btn btn-primary btn-sm" onclick="planModal()">+ 添加安排</button>
+    </div>
+    <div id="planList"></div>
+  </div>
+
+  <!-- 费用面板 -->
+  <div class="panel hidden" id="panel-bill">
+    <div class="panel-head"><h3>费用总览</h3>
+      <button class="btn btn-primary btn-sm" onclick="billModal()">+ 记一笔</button>
+    </div>
+    <div class="bill-summary" id="billSummary"></div>
+    <div class="panel-head"><h3>账单明细</h3></div>
+    <div id="billTableWrap"></div>
+    <div class="panel-head" style="margin-top:22px"><h3>结算方案（最少转账）</h3></div>
+    <div id="settleList"></div>
+  </div>
+</div>
+
+<!-- ===== 弹窗容器 ===== -->
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 核心状态与存储 ================= */
+var LS_KEY = 'gtp_current';      // 当前团队码
+var ID_KEY = 'gtp_myid';         // 我在团队中的成员id
+var state = null;
+var currentTab = 'members';
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function money(n){ return '¥' + (Math.round(n*100)/100).toFixed(2).replace(/\.00$/,''); }
+
+function loadState(code){
+  try{ var raw = localStorage.getItem('gtp_team_'+code); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+}
+function saveState(){
+  if(!state) return;
+  localStorage.setItem('gtp_team_'+state.team.code, JSON.stringify(state));
+  localStorage.setItem(LS_KEY, state.team.code);
+}
+function encodeTeam(d){
+  return btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+}
+function decodeTeam(s){
+  return JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
+}
+
+/* ================= 启动：优先读链接里的团队数据 ================= */
+function boot(){
+  var hash = location.hash;
+  if(hash.indexOf('#d=') === 0){
+    try{
+      var incoming = decodeTeam(hash.slice(2));
+      var local = loadState(incoming.team.code);
+      // 合并：以数据较新的为准（按成员数+账单数粗略比较，直接采用链接数据并保留本地新增）
+      state = incoming;
+      if(local){ state = mergeTeam(local, incoming); }
+      saveState();
+      localStorage.setItem(ID_KEY, state.team.myId || '');
+      location.hash = '';
+      enterApp();
+      toast('已通过邀请链接加入「' + state.team.name + '」');
+      return;
+    }catch(e){
+      toast('链接数据已损坏，请改用团队码加入');
+      location.hash='';
+    }
+  }
+  var code = localStorage.getItem(LS_KEY);
+  if(code){
+    var d = loadState(code);
+    if(d){ state = d; enterApp(); return; }
+  }
+  document.getElementById('landing').classList.remove('hidden');
+}
+function mergeTeam(a,b){
+  // 以 b 为底，补入 a 中独有的实体
+  ['members','dests','plans','bills'].forEach(function(k){
+    var ids = {}; b[k].forEach(function(x){ids[x.id]=1;});
+    a[k].forEach(function(x){ if(!ids[x.id]) b[k].push(x); });
+  });
+  return b;
+}
+
+/* ================= 创建 / 加入 ================= */
+function genCode(){
+  var chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s='';
+  for(var i=0;i<6;i++) s+=chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+function openCreate(){
+  modal({
+    title:'创建旅行团',
+    body:[
+      f('text','teamName','团队名称','例如：兰大毕业不散团'),
+      f('text','myName','你的昵称',''),
+      f('date','dates','计划出发日期（可选）',''),
+      f('number','budget','你的预算（元，可选）','')
+    ],
+    okText:'创建团队',
+    onOk:function(v){
+      if(!v.teamName) return toast('请填写团队名称');
+      if(!v.myName) return toast('请填写你的昵称');
+      var me = {id:uid(), name:v.myName, budget:v.budget||'', avail:v.dates||'', contact:''};
+      state = {team:{name:v.teamName, code:genCode(), createdAt:Date.now(), myId:me.id},
+               members:[me], dests:[], plans:[], bills:[]};
+      localStorage.setItem(ID_KEY, me.id);
+      saveState();
+      closeModal(); enterApp();
+      toast('团队创建成功，快把邀请链接发给同学吧');
+    }
+  });
+}
+function openJoin(){
+  modal({
+    title:'加入旅行团',
+    body:[
+      f('text','code','6位团队码',''),
+      f('text','myName','你的昵称','')
+    ],
+    okText:'加入团队',
+    onOk:function(v){
+      var code = (v.code||'').toUpperCase().trim();
+      if(code.length<6) return toast('请输入完整的团队码');
+      if(!v.myName) return toast('请填写你的昵称');
+      var d = loadState(code);
+      if(!d) return toast('本地未找到该团队，请向团长索要「邀请链接」打开');
+      var me = {id:uid(), name:v.myName, budget:'', avail:'', contact:''};
+      d.members.push(me);
+      d.team.myId = me.id;
+      state = d;
+      localStorage.setItem(ID_KEY, me.id);
+      saveState();
+      closeModal(); enterApp();
+      toast('欢迎加入「' + d.team.name + '」');
+    }
+  });
+}
+function leaveTeam(){
+  if(!confirm('确定退出当前团队？本地页面将清空（团队数据仍可通过邀请链接恢复）')) return;
+  localStorage.removeItem(LS_KEY);
+  state = null;
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('landing').classList.remove('hidden');
+}
+function enterApp(){
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  renderAll();
+}
+
+/* ================= 分享 / 导入导出 ================= */
+function shareLink(){
+  if(!state) return;
+  state.team.myId = localStorage.getItem(ID_KEY) || '';
+  var url = location.origin + location.pathname + '#d=' + encodeTeam(state);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(function(){ toast('邀请链接已复制，发给同学们吧'); });
+  }else{
+    prompt('复制以下邀请链接：', url);
+  }
+}
+function exportData(){
+  var blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (state.team.name||'旅行团') + '-备份.json';
+  a.click();
+  toast('备份文件已导出');
+}
+function importDataPrompt(){
+  var inp = document.createElement('input');
+  inp.type='file'; inp.accept='.json';
+  inp.onchange = function(){
+    var file = inp.files[0]; if(!file) return;
+    var r = new FileReader();
+    r.onload = function(){
+      try{
+        var d = JSON.parse(r.result);
+        if(!d.team||!d.members) throw 0;
+        state = d; saveState(); enterApp(); toast('数据导入成功');
+      }catch(e){ toast('文件格式不正确'); }
+    };
+    r.readAsText(file);
+  };
+  inp.click();
+}
+
+/* ================= 弹窗工具 ================= */
+function f(type,key,label,ph){ return {type:type,key:key,label:label,ph:ph||'',value:''}; }
+function modal(opt){
+  var root = document.getElementById('modalRoot');
+  var html = '<div class="modal-mask" onclick="if(event.target===this)closeModal()"><div class="modal"><h3>'+esc(opt.title)+'</h3>';
+  html += '<div id="modalBody">'+opt.customBody+ '</div>';
+  if(!opt.customBody){
+    html = '<div class="modal-mask" onclick="if(event.target===this)closeModal()"><div class="modal"><h3>'+esc(opt.title)+'</h3>';
+    opt.body.forEach(function(x){
+      html += '<div class="field"><label>'+esc(x.label)+'</label>';
+      if(x.type==='textarea'){
+        html += '<textarea data-k="'+x.key+'" placeholder="'+esc(x.ph)+'">'+esc(x.value)+'</textarea>';
+      }else{
+        html += '<input data-k="'+x.key+'" type="'+x.type+'" placeholder="'+esc(x.ph)+'" value="'+esc(x.value)+'">';
+      }
+      html += '</div>';
+    });
+  }
+  html += (opt.tip?'<div class="modal-tip">'+esc(opt.tip)+'</div>':'');
+  html += '<div class="modal-actions"><button class="btn btn-ghost btn-sm" onclick="closeModal()">取消</button>';
+  html += '<button class="btn btn-primary btn-sm" id="modalOk">'+esc(opt.okText||'确定')+'</button></div></div></div>';
+  root.innerHTML = html;
+  document.getElementById('modalOk').onclick = function(){
+    var v = {};
+    root.querySelectorAll('[data-k]').forEach(function(el){ v[el.getAttribute('data-k')] = el.value; });
+    opt.onOk && opt.onOk(v);
+  };
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+/* ================= 标签切换 ================= */
+function switchTab(t){
+  currentTab = t;
+  document.querySelectorAll('.tab').forEach(function(el){
+    el.classList.toggle('active', el.getAttribute('data-tab')===t);
+  });
+  ['members','dest','plan','bill'].forEach(function(k){
+    document.getElementById('panel-'+k).classList.toggle('hidden', k!==t);
+  });
+}
+
+/* ================= 渲染总入口 ================= */
+function renderAll(){
+  if(!state) return;
+  document.getElementById('teamName').textContent = state.team.name;
+  document.getElementById('teamMeta').textContent =
+    '创建于 ' + new Date(state.team.createdAt).toLocaleDateString() + ' · 共 ' + state.members.length + ' 人';
+  document.getElementById('codeChip').innerHTML =
+    esc(state.team.code) + '<button title="复制邀请链接" onclick="shareLink()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>';
+  renderMembers(); renderDests(); renderPlans(); renderBill();
+}
+
+/* ================= 成员模块 ================= */
+function renderMembers(){
+  var myId = localStorage.getItem(ID_KEY);
+  var budgets = state.members.map(function(m){return parseFloat(m.budget)||0;}).filter(Boolean);
+  var hint = budgets.length ? '（预算区间 ' + money(Math.min.apply(null,budgets)) + ' ~ ' + money(Math.max.apply(null,budgets)) + '）' : '';
+  document.getElementById('memberHint').textContent = hint;
+  var el = document.getElementById('memberList');
+  if(!state.members.length){ el.innerHTML = emptyHTML('还没有成员，快添加吧'); return; }
+  el.innerHTML = '<div class="member-grid">' + state.members.map(function(m){
+    return '<div class="member-card"><div class="top"><div class="avatar">'+esc(m.name.slice(0,1))+'</div>'+
+      '<div><div class="name">'+esc(m.name)+(m.id===myId?' <span style="font-size:11px;color:var(--teal)">（我）</span>':'')+'</div>'+
+      (m.budget?'<div class="budget">预算 '+money(m.budget)+'</div>':'')+'</div></div>'+
+      '<div class="info">'+
+        (m.avail?'<div>可出行：'+esc(m.avail)+'</div>':'')+
+        (m.contact?'<div>联系方式：'+esc(m.contact)+'</div>':'')+
+        (!m.avail&&!m.contact?'<div style="color:#cbd5e1">资料待完善</div>':'')+
+      '</div><div class="actions"><button class="btn btn-danger" onclick="delMember(\''+m.id+'\')">删除</button> '+
+      '<button class="btn btn-ghost btn-sm" style="padding:4px 10px" onclick="memberModal(\''+m.id+'\')">编辑</button></div></div>';
+  }).join('') + '</div>';
+}
+function memberModal(id){
+  var m = id ? state.members.find(function(x){return x.id===id;}) : {name:'',budget:'',avail:'',contact:''};
+  modal({
+    title: id?'编辑成员':'添加成员',
+    body:[
+      Object.assign(f('text','name','昵称',''),{value:m.name}),
+      Object.assign(f('number','budget','预算（元）',''),{value:m.budget}),
+      Object.assign(f('date','avail','可出行开始日期',''),{value:m.avail}),
+      Object.assign(f('text','contact','联系方式（微信/手机）',''),{value:m.contact})
+    ],
+    okText:'保存',
+    onOk:function(v){
+      if(!v.name) return toast('请填写昵称');
+      if(id){ Object.assign(m, v); }
+      else{
+        var nm = Object.assign({id:uid()}, v);
+        state.members.push(nm);
+      }
+      saveState(); closeModal(); renderAll();
+    }
+  });
+}
+function delMember(id){
+  if(!confirm('确定删除该成员？其相关投票与账单参与信息也会清理')) return;
+  state.members = state.members.filter(function(x){return x.id!==id;});
+  state.dests.forEach(function(d){ d.votes = d.votes.filter(function(v){return v!==id;}); });
+  state.bills.forEach(function(b){
+    b.participants = b.participants.filter(function(v){return v!==id;});
+    if(b.payer===id) b.payer = '';
+  });
+  saveState(); renderAll();
+}
+
+/* ================= 目的地投票模块 ================= */
+function renderDests(){
+  var el = document.getElementById('destList');
+  var myId = localStorage.getItem(ID_KEY);
+  var maxV = Math.max.apply(null, state.dests.map(function(d){return d.votes.length;}).concat([0]));
+  if(!state.dests.length){ el.innerHTML = emptyHTML('还没有提名目的地'); return; }
+  var nameOf = function(id){ var m=state.members.find(function(x){return x.id===id;}); return m?m.name:'?'; };
+  el.innerHTML = '<div class="dest-list">' + state.dests.map(function(d){
+    var voted = d.votes.indexOf(myId)>=0;
+    var pct = maxV ? Math.round(d.votes.length/maxV*100) : 0;
+    return '<div class="dest-card'+(d.votes.length===maxV&&maxV>0?' winner':'')+'">'+
+      '<button class="btn btn-danger dest-del" onclick="delDest(\''+d.id+'\')">删除</button>'+
+      '<h4>'+esc(d.name)+(d.votes.length===maxV&&maxV>0?' <span style="font-size:11px;background:var(--amber);color:#fff;padding:1px 8px;border-radius:6px">热门</span>':'')+'</h4>'+
+      '<div class="desc">'+esc(d.desc||'')+'</div>'+
+      '<div class="vote-bar"><i style="width:'+pct+'%"></i></div>'+
+      '<div class="vote-foot"><span class="vote-users">'+d.votes.length+' 票'+
+        (d.votes.length?'：'+d.votes.map(nameOf).map(esc).join('、'):'')+'</span>'+
+        '<button class="vote-btn'+(voted?' on':'')+'" onclick="toggleVote(\''+d.id+'\')">'+(voted?'已投':'投一票')+'</button>'+
+      '</div></div>';
+  }).join('') + '</div>';
+}
+function destModal(){
+  if(!state.members.length) return toast('请先添加成员');
+  modal({
+    title:'提名目的地',
+    body:[f('text','name','目的地名称','例如：青岛 / 成都 / 大理'), f('textarea','desc','一句话推荐理由','')],
+    okText:'提名',
+    onOk:function(v){
+      if(!v.name) return toast('请填写目的地名称');
+      state.dests.push({id:uid(), name:v.name, desc:v.desc, votes:[]});
+      saveState(); closeModal(); renderAll();
+    }
+  });
+}
+function toggleVote(id){
+  var myId = localStorage.getItem(ID_KEY);
+  if(!myId) return toast('成员信息缺失，请退出后重新加入');
+  var d = state.dests.find(function(x){return x.id===id;});
+  var i = d.votes.indexOf(myId);
+  if(i>=0) d.votes.splice(i,1); else d.votes.push(myId);
+  saveState(); renderAll();
+}
+function delDest(id){
+  if(!confirm('确定删除该目的地提名？')) return;
+  state.dests = state.dests.filter(function(x){return x.id!==id;});
+  saveState(); renderAll();
+}
+
+/* ================= 行程模块 ================= */
+function renderPlans(){
+  var el = document.getElementById('planList');
+  if(!state.plans.length){ el.innerHTML = emptyHTML('行程还是空的，添加每日安排吧'); return; }
+  // 按天分组、按时间排序
+  var days = {};
+  state.plans.forEach(function(p){ (days[p.day] = days[p.day]||[]).push(p); });
+  var dayKeys = Object.keys(days).sort();
+  var dayNum = 0;
+  el.innerHTML = dayKeys.map(function(day){
+    dayNum++;
+    var items = days[day].sort(function(a,b){return a.time<b.time?-1:1;});
+    return '<div class="day-block"><div class="day-title">Day '+dayNum+' · '+esc(day)+'</div>'+
+      '<div class="tl">' + items.map(function(p){
+        return '<div class="tl-time">'+esc(p.time||'')+'</div>'+
+          '<div class="tl-axis"><div class="tl-dot"></div></div>'+
+          '<div class="tl-item"><div class="tl-card">'+
+          '<button class="btn btn-danger del" onclick="delPlan(\''+p.id+'\')">删除</button>'+
+          '<h5>'+esc(p.title)+'</h5>'+(p.desc?'<p>'+esc(p.desc)+'</p>':'')+'</div></div>';
+      }).join('') + '</div></div>';
+  }).join('');
+}
+function planModal(){
+  var days = uniqueDays();
+  var dayOpts = days.map(function(d){return esc(d);}).join('');
+  modal({
+    title:'添加行程安排',
+    body:[
+      f('date','day','日期',''),
+      f('time','time','时间',''),
+      f('text','title','安排（如：集合/景点/用餐）',''),
+      f('textarea','desc','备注（地点、注意事项等）','')
+    ],
+    tip:'小提示：日期直接选，时间可留空，安排会自动按日期分组为 Day1、Day2…',
+    okText:'添加',
+    onOk:function(v){
+      if(!v.day||!v.title) return toast('请填写日期和安排内容');
+      state.plans.push({id:uid(), day:v.day, time:v.time, title:v.title, desc:v.desc});
+      saveState(); closeModal(); renderAll();
+    }
+  });
+}
+function uniqueDays(){
+  var o = {};
+  state.plans.forEach(function(p){o[p.day]=1;});
+  return Object.keys(o).sort();
+}
+function delPlan(id){
+  if(!confirm('确定删除该条安排？')) return;
+  state.plans = state.plans.filter(function(x){return x.id!==id;});
+  saveState(); renderAll();
+}
+
+/* ================= 费用模块 ================= */
+function calcBalances(){
+  var bal = {};
+  state.members.forEach(function(m){ bal[m.id] = 0; });
+  state.bills.forEach(function(b){
+    var n = b.participants.length;
+    if(!n || !b.amount) return;
+    var share = parseFloat(b.amount)/n;
+    if(bal[b.payer]!=null) bal[b.payer] += parseFloat(b.amount);
+    b.participants.forEach(function(pid){ if(bal[pid]!=null) bal[pid] -= share; });
+  });
+  return bal;
+}
+function renderBill(){
+  // 总览
+  var total = state.bills.reduce(function(s,b){return s+(parseFloat(b.amount)||0);},0);
+  var perCapita = state.members.length ? total/state.members.length : 0;
+  var nameOf = function(id){ var m=state.members.find(function(x){return x.id===id;}); return m?m.name:'?'; };
+  document.getElementById('billSummary').innerHTML =
+    '<div class="stat"><div class="lab">总支出</div><div class="num teal">'+money(total)+'</div></div>'+
+    '<div class="stat"><div class="lab">人均（全员口径）</div><div class="num">'+money(perCapita)+'</div></div>'+
+    '<div class="stat"><div class="lab">账单笔数</div><div class="num">'+state.bills.length+'</div></div>';
+  // 明细表
+  var tw = document.getElementById('billTableWrap');
+  if(!state.bills.length){ tw.innerHTML = emptyHTML('还没有账单，路上花的钱随手记一笔'); }
+  else{
+    tw.innerHTML = '<table class="bill-table"><colgroup><col class="col1"><col class="col2"><col class="col3"><col class="col4"><col class="col5"></colgroup>'+
+      '<thead><tr><th>项目</th><th>付款人</th><th>金额</th><th>分摊给</th><th></th></tr></thead><tbody>'+
+      state.bills.map(function(b){
+        return '<tr><td>'+esc(b.title)+'</td><td>'+esc(nameOf(b.payer))+'</td><td style="font-weight:700">'+money(b.amount)+'</td>'+
+          '<td>'+b.participants.map(function(p){return '<span class="chip">'+esc(nameOf(p))+'</span>';}).join('')+'</td>'+
+          '<td><button class="btn btn-danger" onclick="delBill(\''+b.id+'\')">删除</button></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  // 结算：贪心配对
+  var bal = calcBalances();
+  var creditors = [], debtors = [];
+  Object.keys(bal).forEach(function(id){
+    if(bal[id] > 0.005) creditors.push({id:id, n:bal[id]});
+    else if(bal[id] < -0.005) debtors.push({id:id, n:-bal[id]});
+  });
+  creditors.sort(function(a,b){return b.n-a.n;});
+  debtors.sort(function(a,b){return b.n-a.n;});
+  var transfers = [];
+  var ci=0, di=0;
+  while(ci<creditors.length && di<debtors.length){
+    var pay = Math.min(creditors[ci].n, debtors[di].n);
+    transfers.push({from:debtors[di].id, to:creditors[ci].id, amount:pay});
+    creditors[ci].n -= pay; debtors[di].n -= pay;
+    if(creditors[ci].n < 0.01) ci++;
+    if(debtors[di].n < 0.01) di++;
+  }
+  var sl = document.getElementById('settleList');
+  if(!transfers.length){ sl.innerHTML = '<div class="empty">账已两清，谁也不欠谁</div>'; }
+  else{
+    sl.innerHTML = '<ul class="settle-list">' + transfers.map(function(t){
+      return '<li><strong>'+esc(nameOf(t.from))+'</strong><span class="arrow">→ 转给 →</span><strong>'+esc(nameOf(t.to))+'</strong><span class="amt">'+money(t.amount)+'</span></li>';
+    }).join('') + '</ul>';
+  }
+}
+function billModal(){
+  if(state.members.length<1) return toast('请先添加成员');
+  var opts = state.members.map(function(m){return '<option value="'+m.id+'">'+esc(m.name)+'</option>';}).join('');
+  var checks = state.members.map(function(m){
+    return '<label class="pchk" data-pid="'+m.id+'"><input type="checkbox" value="'+m.id+'" checked>'+esc(m.name)+'</label>';
+  }).join('');
+  var body =
+    '<div class="field"><label>费用项目</label><input data-k="title" placeholder="如：高铁票、民宿、火锅"></div>'+
+    '<div class="field"><label>付款人</label><select data-k="payer">'+opts+'</select></div>'+
+    '<div class="field"><label>金额（元）</label><input data-k="amount" type="number" min="0" step="0.01" placeholder="0"></div>'+
+    '<div class="field"><label>分摊给（不勾选=不参与这笔）</label><div class="participant-box" id="pbox">'+checks+'</div></div>';
+  modal({
+    title:'记一笔',
+    customBody:body,
+    okText:'保存账单',
+    onOk:function(){
+      var root = document.getElementById('modalRoot');
+      var title = root.querySelector('[data-k=title]').value;
+      var payer = root.querySelector('[data-k=payer]').value;
+      var amount = root.querySelector('[data-k=amount]').value;
+      var participants = [];
+      root.querySelectorAll('#pbox input:checked').forEach(function(c){participants.push(c.value);});
+      if(!title) return toast('请填写费用项目');
+      if(!(parseFloat(amount)>0)) return toast('请填写正确金额');
+      if(!participants.length) return toast('至少选择一位分摊人');
+      state.bills.push({id:uid(), title:title, payer:payer, amount:parseFloat(amount), participants:participants});
+      saveState(); closeModal(); renderAll();
+    }
+  });
+  // 复选框样式联动
+  document.querySelectorAll('#pbox .pchk input').forEach(function(c){
+    c.addEventListener('change', function(){ c.parentNode.classList.toggle('on', c.checked); });
+    c.parentNode.classList.add('on');
+  });
+}
+function delBill(id){
+  if(!confirm('确定删除该笔账单？')) return;
+  state.bills = state.bills.filter(function(x){return x.id!==id;});
+  saveState(); renderAll();
+}
+
+/* ================= 空状态 ================= */
+function emptyHTML(msg){
+  return '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'+esc(msg)+'</div>';
+}
+
+boot();
+</script>
+</body>
+</html>
